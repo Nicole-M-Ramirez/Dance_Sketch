@@ -970,7 +970,7 @@ const DancingStickFigure = () => {
     )
 }
 
-const PlaybackIndicator = () => {
+export const PlaybackIndicator = () => {
     const playing = useSelector(daw.selectPlaying)
 
     const tempoMap = useSelector(daw.selectTempoMap)
@@ -986,13 +986,13 @@ const PlaybackIndicator = () => {
 
     return (
      <div style={{ zIndex:3 }} className={`fixed top-4 right-4 transition-opacity duration-300 `}>
-            {/* <img src={require('../../public/img/triangle.png')} alt="Playback indicator" className="w-16 h-16" /> */}
-            {/*<DotLottieReact
+            {/* <img src={require('../../public/img/triangle.png')} alt="Playback indicator" className="w-16 h-16" /> 
+            <DotLottieReact
                 src="https://lottie.host/d695ad9f-bfc8-40e5-998f-e8294aaae860/zHaLvMjuSC.lottie"
                 loop
                 autoplay
                 speed={currentTempo*0.01 * 1}
-            />*/}
+            /> */}
         </div>
     )
          

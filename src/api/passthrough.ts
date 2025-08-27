@@ -24,6 +24,10 @@ import store from "../reducers"
 import * as request from "../request"
 import * as player from "../audio/player"
 import { animations } from "../data/Animations"
+import { setPlaying } from "../daw/dawState"
+import lottie from "lottie-web";
+
+
 
 class ValueError extends Error {
     constructor(message: string | undefined) {
@@ -933,49 +937,50 @@ export function NumPrint(result: DAWData, number: number) {
 }
 
 // Function to display triangle.png when music is playing
-export function One(result: DAWData) {
-    const args = [...arguments].slice(1)
-    esconsole("Calling One function", ["debug", "PT"])
+// export function One(result: DAWData) {
+//     const args = [...arguments].slice(1)
+//     esconsole("Calling One function", ["debug", "PT"])
 
-    // Remove any existing triangle container and its subscription
-    cleanupTriangle()
+//     // Remove any existing triangle container and its subscription
+//     cleanupTriangle()
 
-    const triangleComponent = document.createElement('div')
-    triangleComponent.id = 'triangle-container'
-    triangleComponent.style.cssText = `
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        z-index: 1000;
-        transition: opacity 0.3s ease;
-        opacity: 0;
-    `
+//     const triangleComponent = document.createElement('div')
+//     triangleComponent.id = 'triangle-container'
+//     triangleComponent.style.cssText = `
+//         position: fixed;
+//         top: 20px;
+//         right: 20px;
+//         z-index: 1000;
+//         transition: opacity 0.3s ease;
+//         opacity: 0;
+//     `
     
-    const triangleImage = document.createElement('img')
-    triangleImage.src = require('../../public/img/triangle.png')
-    triangleImage.style.width = '100px'
-    triangleImage.style.height = '100px'
-    triangleComponent.appendChild(triangleImage)
+//     const triangleImage = document.createElement('img')
+//     triangleImage.src = require('../../public/img/triangle.png')
+//     triangleImage.style.width = '100px'
+//     triangleImage.style.height = '100px'
+//     triangleComponent.appendChild(triangleImage)
     
-    document.body.appendChild(triangleComponent)
+//     document.body.appendChild(triangleComponent)
 
-    // Show/hide triangle based on playback state
-    const updateTriangleVisibility = () => {
-        const isPlaying = store.getState().daw.playing
-        triangleComponent.style.opacity = isPlaying ? '1' : '0'
-    }
+//     // Show/hide triangle based on playback state
+//     const updateTriangleVisibility = () => {
+//         const isPlaying = store.getState().daw.playing
+//         triangleComponent.style.opacity = isPlaying ? '1' : '0'
+//     }
 
-    // Initial visibility check
-    updateTriangleVisibility()
+//     // Initial visibility check
+//     updateTriangleVisibility()
 
-    // Subscribe to state changes and store the unsubscribe function
-    const unsubscribe = store.subscribe(updateTriangleVisibility)
-    triangleComponent.dataset.unsubscribe = unsubscribe.toString()
+//     // Subscribe to state changes and store the unsubscribe function
+//     const unsubscribe = store.subscribe(updateTriangleVisibility)
+//     triangleComponent.dataset.unsubscribe = unsubscribe.toString()
 
-    return result
-}
+//     return result
+// }
 
 export function Setup_Dancer(result: DAWData, move : string) {
+    
     const args = [...arguments].slice(1)
 
     checkType("move", "string", move)
@@ -986,7 +991,7 @@ export function Setup_Dancer(result: DAWData, move : string) {
     dancerComponent.id = 'dancer-container'
     dancerComponent.style.cssText = `
         position: fixed;
-        top: 2%;
+        top: 8%;
         left: 80%;
         z-index: 1;
         transition: opacity 0.3s ease;
@@ -996,33 +1001,66 @@ export function Setup_Dancer(result: DAWData, move : string) {
     const lottieContainer = document.createElement('div')
     lottieContainer.style.width = '200px'
     lottieContainer.style.height = '200px'
-    
-    // Create the lottie animation element
-    const lottieElement = document.createElement('div')
-    lottieElement.id = 'dancer-lottie'
+    lottieContainer.id = "dancer-lottie";
 
-    //const key = (move || "").toUpperCase()
-    const lottieURL = animations[move] 
+    dancerComponent.appendChild(lottieContainer);
+    document.body.appendChild(dancerComponent);
 
-    lottieElement.innerHTML = `
-    <div style="width: 200px; height: 200px;">
-        <iframe 
-            src="${lottieURL}"
-            style="width: 100%; height: 100%; border: none;"
-            title="Dancer Animation">
-        </iframe>
-    </div>
-    `
+    const animation = lottie.loadAnimation({
+        container: lottieContainer,
+        renderer: "svg",
+        loop: true,
+        autoplay: true,
+        //path: "/music.json", 
+        path: '/music.json'
+      });
 
-    lottieContainer.appendChild(lottieElement)
-    dancerComponent.appendChild(lottieContainer)  
-    document.body.appendChild(dancerComponent)
+      
 
     const updateDancerVisibility = () => {
-        const isPlaying = store.getState().daw.playing
-        dancerComponent.style.opacity = isPlaying ? '1' : '0'
-        //dancerComponent.style.animationPlayState = 'pause'
-    }
+        const isPlaying = store.getState().daw.playing;
+        if (isPlaying) {
+            dancerComponent.style.opacity = "1";
+            animation.play();  
+        } else {
+            dancerComponent.style.opacity = "0";
+            animation.pause(); 
+        }
+    };
+    
+    // // Create the lottie animation element
+    // const lottieElement = document.createElement('div')
+    // lottieElement.id = 'dancer-lottie'
+
+    // //const key = (move || "").toUpperCase()
+    // const lottieURL = animations[move] 
+
+    // lottieElement.innerHTML = `
+    // <div style="width: 200px; height: 200px;">
+    //     <iframe 
+    //         src="${lottieURL}"
+    //         style="width: 100%; height: 100%; border: none;"
+    //         title="Dancer Animation">
+    //     </iframe>
+    // </div>
+    // `
+
+    // lottieContainer.appendChild(lottieElement)
+    // dancerComponent.appendChild(lottieContainer)  
+    // document.body.appendChild(dancerComponent)
+
+    // let oneTime = false
+    // const updateDancerVisibility = () => {
+    //     const isPlaying = store.getState().daw.playing
+    //     if(isPlaying === true){
+    //         dancerComponent.style.opacity = '1'
+    //     }
+    //     else{
+    //         dancerComponent.style.opacity = '0'
+    //     }
+    //     //dancerComponent.style.opacity = isPlaying ? '1' : '0'
+    //     //dancerComponent.style.animationPlayState = 'pause'
+    // }
 
     // Initial visibility check
     updateDancerVisibility()
@@ -1075,22 +1113,11 @@ function cleanupDancer() {
             }
         }
         
-        // Stop dotlottie-player if present
-        const player = existingContainer.querySelector('dotlottie-player') as any
-        if (player) {
+        // Stop lottie animation if present
+        const lottieContainer = existingContainer.querySelector('#dancer-lottie') as HTMLElement
+        if (lottieContainer && (lottieContainer as any).lottieInstance) {
             try {
-                if (typeof player.pause === 'function') player.pause()
-                if (typeof player.stop === 'function') player.stop()
-            } catch (e) {
-                console.warn('Error stopping lottie player:', e)
-            }
-        }
-        
-        // Clean up legacy lottie instance if it exists
-        const lottieElement = existingContainer.querySelector('#dancer-lottie') as HTMLElement
-        if (lottieElement && lottieElement.dataset.lottieInstance) {
-            try {
-                const lottieInstance = new Function('return ' + lottieElement.dataset.lottieInstance)()
+                const lottieInstance = (lottieContainer as any).lottieInstance
                 if (lottieInstance && typeof lottieInstance.destroy === 'function') {
                     lottieInstance.destroy()
                 }

@@ -9,6 +9,7 @@
 
 #daw-label {
   float: left;
+  
 }
 
 #daw-container {
@@ -16,10 +17,12 @@
   width: 100%;
   border-left: @border-width solid @med-bg;
   border-top: @border-width solid @med-bg;
+  
 }
 
 #zoom-container {
   border-top: @border-width solid @med-bg;
+  width: 80%; //permite redicir el tamaño del digital audio workstation 
 }
 
 #daw-timeline{
@@ -430,7 +433,7 @@ svg.effectSvg path {
 }
 
 .daw-sched-marker {
-  width: 3px;
+  width: 30px;
   height: 100%; /*smaller than daw height to avoid infinite scroll*/
   float: left;
   margin-left: 110px;
