@@ -984,173 +984,51 @@ export function NumPrint(result: DAWData, number: number) {
 export function Setup_Dancer(result: DAWData, move : string) {
     // Remove any existing dancer container and its subscription
     cleanupDancer()
+    const dancerComponent = document.createElement("div");
+  dancerComponent.id = "dancer-container";
+  dancerComponent.style.cssText = `
+    position: fixed;
+    top: 8%;
+    left: 80%;
+    z-index: 1;
+    transition: opacity 0.3s ease;
+    opacity: 1;
+  `;
 
-    const dancerComponent = document.createElement('div')
-    dancerComponent.id = 'dancer-container'
-    dancerComponent.style.cssText = `
-        position: fixed;
-        top: 8%;
-        left: 80%;
-        z-index: 3;
-        transition: opacity 0.3s ease;
-        opacity: 1;
-        pointer-events: none;
-    `
+  const lottieContainer = document.createElement("div");
+  lottieContainer.style.width = "200px";
+  lottieContainer.style.height = "200px";
+  lottieContainer.id = "dancer-lottie";
 
-    const video = document.createElement('video')
-    video.id = 'dancer-video'
-    video.src = '/BeatsPerMinute.mp4'
-    video.autoplay = true
-    video.loop = true
-    video.muted = true         // required for autoplay in most browsers
-    video.playsInline = true     // prevents fullscreen on mobile
-    video.controls = false       // hide controls (optional)
-    //;(video as any).playsInline = true
-    video.playsInline = true
-    video.style.width = '200px'
-    video.style.height = '200px'
-    video.style.zIndex = "3"
-    video.preload = 'auto'
+  dancerComponent.appendChild(lottieContainer);
+  document.body.appendChild(dancerComponent);
 
-    // Basic diagnostics
-    video.addEventListener('error', () => {
-        const err = (video.error && video.error.message) || 'unknown video error'
-        console.error('Dancer video error:', err)
-    })
-    video.addEventListener('loadeddata', () => {
-        // try playing as soon as we have data
-        const p = video.play()
-        if (p && typeof (p as any).catch === 'function') {
-            ;(p as Promise<void>).catch(() => {})
-        }
-    })
+  // Cargar animación con lottie-web
+  const animation = lottie.loadAnimation({
+    container: lottieContainer,
+    renderer: "svg",
+    loop: true,
+    autoplay: true,
+    path: '/music.json', // tu JSON de Lottie
+  });
 
-    dancerComponent.appendChild(video)
-    document.body.appendChild(dancerComponent)
-    // Ensure the browser loads the new source immediately
-    try { video.load() } catch (_) {}
+  // Función para pausar/reanudar
+  const updateDancerVisibility = () => {
+    const isPlaying = store.getState().daw.playing;
+    if (isPlaying) {
+      //dancerComponent.style.opacity = "1";
+      animation.play();  // ▶️ reanuda
+    } else {
+      //dancerComponent.style.opacity = "0";
+      animation.pause(); // ⏸ pausa
+    }
+  };
 
-    // const updateDancerVisibility = () => {
-    //     const isPlaying = store.getState().daw.playing
-    //     if (isPlaying) {
-    //         dancerComponent.style.opacity = '1'
-    //         const p = video.play()
-    //         if (p && typeof (p as any).catch === 'function') {
-    //             ;(p as Promise<void>).catch(() => {})
-    //         }
-    //     } else {
-    //         dancerComponent.style.opacity = '0'
-    //         try { video.pause() } catch (_) {}
-    //     }
-    // }
+  updateDancerVisibility();
+  const unsubscribe = store.subscribe(updateDancerVisibility);
+  dancerComponent.dataset.unsubscribe = unsubscribe.toString();
 
-    // Initial visibility
-    //updateDancerVisibility()
-
-    // Subscribe to playback state changes and keep unsubscribe for cleanup
-    //const unsubscribe = store.subscribe(updateDancerVisibility)
-    //;(dancerComponent as any)._unsubscribe = unsubscribe
-    
-    // const args = [...arguments].slice(1)
-
-    // checkType("move", "string", move)
-
-    // cleanupDancer()
-
-    // const dancerComponent = document.createElement('div')
-    // dancerComponent.id = 'dancer-container'
-    // dancerComponent.style.cssText = `
-    //     position: fixed;
-    //     top: 8%;
-    //     left: 80%;
-    //     z-index: 20;
-    //     transition: opacity 0.3s ease;
-    //     opacity: 0;
-    // `
-
-    // const lottieContainer = document.createElement('div')
-    // lottieContainer.style.width = '200px'
-    // lottieContainer.style.height = '200px'
-    // lottieContainer.id = "dancer-lottie";
-
-    // const animation = lottie.loadAnimation({
-    //     container: lottieContainer,
-    //     renderer: "svg",
-    //     loop: true,
-    //     autoplay: true,
-    //     //path: "/music.json", 
-    //     path: '/music.json'
-    //   });
-
-    // //(lottieContainer as any).lottieInstance = animation;
-    
-
-    // dancerComponent.appendChild(lottieContainer);
-    // document.body.appendChild(dancerComponent);
-
-   
-
-    // animation.addEventListener('error', (error) => {
-    //     console.error('Lottie animation error:', error);
-    // });
-    
-    // animation.addEventListener('DOMLoaded', () => {
-    //     console.log('Lottie animation loaded successfully');
-    // });
-      
-
-    // const updateDancerVisibility = () => {
-    //     const isPlaying = store.getState().daw.playing;
-    //     if (isPlaying) {
-    //         dancerComponent.style.opacity = "1";
-    //         animation.play();  
-    //     } else {
-    //         dancerComponent.style.opacity = "0";
-    //         animation.pause(); 
-    //     }
-    // };
-    
-    // // Create the lottie animation element
-    // const lottieElement = document.createElement('div')
-    // lottieElement.id = 'dancer-lottie'
-
-    // //const key = (move || "").toUpperCase()
-    // const lottieURL = animations[move] 
-
-    // lottieElement.innerHTML = `
-    // <div style="width: 200px; height: 200px;">
-    //     <iframe 
-    //         src="${lottieURL}"
-    //         style="width: 100%; height: 100%; border: none;"
-    //         title="Dancer Animation">
-    //     </iframe>
-    // </div>
-    // `
-
-    // lottieContainer.appendChild(lottieElement)
-    // dancerComponent.appendChild(lottieContainer)  
-    // document.body.appendChild(dancerComponent)
-
-    // let oneTime = false
-    // const updateDancerVisibility = () => {
-    //     const isPlaying = store.getState().daw.playing
-    //     if(isPlaying === true){
-    //         dancerComponent.style.opacity = '1'
-    //     }
-    //     else{
-    //         dancerComponent.style.opacity = '0'
-    //     }
-    //     //dancerComponent.style.opacity = isPlaying ? '1' : '0'
-    //     //dancerComponent.style.animationPlayState = 'pause'
-    // }
-
-    // // Initial visibility check
-    // updateDancerVisibility()
-
-    // // Subscribe to state changes and store the unsubscribe function
-    // const unsubscribe = store.subscribe(updateDancerVisibility)
-    // dancerComponent.dataset.unsubscribe = unsubscribe.toString()
-    
+ 
     return result
 }
     
