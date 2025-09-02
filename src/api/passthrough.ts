@@ -984,49 +984,53 @@ export function NumPrint(result: DAWData, number: number) {
 export function Setup_Dancer(result: DAWData, move : string) {
     // Remove any existing dancer container and its subscription
     cleanupDancer()
+
     const dancerComponent = document.createElement("div");
-  dancerComponent.id = "dancer-container";
-  dancerComponent.style.cssText = `
-    position: fixed;
-    top: 8%;
-    left: 80%;
-    z-index: 1;
-    transition: opacity 0.3s ease;
-    opacity: 1;
-  `;
+    dancerComponent.id = "dancer-container";
+    dancerComponent.style.cssText = `
+        position: fixed;
+        top: 8%;
+        left: 67%;
+        z-index: 1;
+        transition: opacity 0.3s ease;
+        opacity: 1;
+    `;
 
-  const lottieContainer = document.createElement("div");
-  lottieContainer.style.width = "200px";
-  lottieContainer.style.height = "200px";
-  lottieContainer.id = "dancer-lottie";
+    const lottieContainer = document.createElement("div");
+    lottieContainer.style.width = "200px";
+    lottieContainer.style.height = "200px";
+    lottieContainer.id = "dancer-lottie";
 
-  dancerComponent.appendChild(lottieContainer);
-  document.body.appendChild(dancerComponent);
+    dancerComponent.appendChild(lottieContainer);
+    document.body.appendChild(dancerComponent);
 
-  // Cargar animación con lottie-web
-  const animation = lottie.loadAnimation({
-    container: lottieContainer,
-    renderer: "svg",
-    loop: true,
-    autoplay: true,
-    path: '/music.json', // tu JSON de Lottie
-  });
+    const animation = lottie.loadAnimation({
+        container: lottieContainer,
+        renderer: "svg",
+        loop: true,
+        autoplay: false,
+        path: '/DanceCat.json',
+    });
 
-  // Función para pausar/reanudar
-  const updateDancerVisibility = () => {
-    const isPlaying = store.getState().daw.playing;
-    if (isPlaying) {
-      //dancerComponent.style.opacity = "1";
-      animation.play();  // ▶️ reanuda
-    } else {
-      //dancerComponent.style.opacity = "0";
-      animation.pause(); // ⏸ pausa
-    }
-  };
+    animation.addEventListener("DOMLoaded", () => {
+        const middleFrame = animation.totalFrames / 2;
+        animation.goToAndPlay(middleFrame, true);
+    });
 
-  updateDancerVisibility();
-  const unsubscribe = store.subscribe(updateDancerVisibility);
-  dancerComponent.dataset.unsubscribe = unsubscribe.toString();
+    const updateDancerVisibility = () => {
+        const isPlaying = store.getState().daw.playing;
+        if (isPlaying) {
+            //dancerComponent.style.opacity = "1";
+            animation.play(); 
+        } else {
+            //dancerComponent.style.opacity = "0";
+            animation.pause();
+        }
+    };
+
+    updateDancerVisibility();
+    const unsubscribe = store.subscribe(updateDancerVisibility);
+    dancerComponent.dataset.unsubscribe = unsubscribe.toString();
 
  
     return result
