@@ -8,6 +8,8 @@ const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPl
 const ReactRefreshWebpackPlugin = require("@pmmmwh/react-refresh-webpack-plugin")
 const ReactRefreshTypeScript = require("react-refresh-typescript")
 
+const CopyWebpackPlugin = require("copy-webpack-plugin")
+
 const libDir = path.resolve(__dirname, "lib")
 const dataDir = path.resolve(__dirname, "src/data")
 const distDir = path.resolve(__dirname, "dist")
@@ -156,6 +158,23 @@ module.exports = mode => ({
             analyzerMode: "static",
             openAnalyzer: false,
         }),
+        new CopyWebpackPlugin({
+            patterns: [
+              {
+                from: path.resolve(__dirname, "public"),
+                to: path.resolve(__dirname, "dist"),
+                globOptions: {
+                  ignore: [
+                    "**/index.html",   // you already handle this with HtmlWebpackPlugin
+                    "**/index_autograders.html",
+                    "**/sorry.html",
+                    "**/message-login.html",
+                    "**/index_maintenance.html",
+                  ],
+                },
+              },
+            ],
+          }),
     ],
     optimization: {
         splitChunks: {
