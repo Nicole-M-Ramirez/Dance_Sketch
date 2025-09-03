@@ -981,9 +981,15 @@ export function NumPrint(result: DAWData, number: number) {
 // }
 
 
-export function Setup_Dancer(result: DAWData, move : string) {
+export function Setup_Dancer(result: DAWData, move : string, start: number, end: number) {
+
+    checkType("move", "string", move)
+    checkType("start", "number", start)
+    checkType("end", "number", end)
+
     // Remove any existing dancer container and its subscription
     cleanupDancer()
+    const danceMove = animations[move]
 
     const dancerComponent = document.createElement("div");
     dancerComponent.id = "dancer-container";
@@ -1007,17 +1013,32 @@ export function Setup_Dancer(result: DAWData, move : string) {
     const animation = lottie.loadAnimation({
         container: lottieContainer,
         renderer: "svg",
-        loop: true,
+        loop: false,
         autoplay: false,
-        path: '/DanceCat.json',
+        path: danceMove,
     });
 
+    const tempoMap = new TempoMap(result)
+    const currentTempo = tempoMap.getTempoAtMeasure(1)
+
+    //La velocidad de la animación es igual a la velocidad de la música
+    //animation.setSpeed(currentTempo*0.01)
+
+    //permite que la animación se inicie en un frame especifico
+    // animation.addEventListener("DOMLoaded", () => {
+    //     console.log("Total frames:", animation.totalFrames)
+    //     //const middleFrame = animation.totalFrames / 2;
+    //     animation.goToAndPlay(start, true);
+    // });
     animation.addEventListener("DOMLoaded", () => {
-        const middleFrame = animation.totalFrames / 2;
-        animation.goToAndPlay(middleFrame, true);
+        console.log("Total frames:", animation.totalFrames);
+    
+        // Play only between `start` and `end`
+        animation.playSegments([start, end], true);
     });
 
     const updateDancerVisibility = () => {
+        //console.log("updating dancer visibility")
         const isPlaying = store.getState().daw.playing;
         if (isPlaying) {
             //dancerComponent.style.opacity = "1";
@@ -1028,7 +1049,10 @@ export function Setup_Dancer(result: DAWData, move : string) {
         }
     };
 
+
     updateDancerVisibility();
+    //checkCurrFrame();
+    //updateCurrentFrame();
     const unsubscribe = store.subscribe(updateDancerVisibility);
     dancerComponent.dataset.unsubscribe = unsubscribe.toString();
 

@@ -175,7 +175,9 @@ const rawDoc: { [key: string]: Item[] } = {
     }],
     Setup_Dancer: [{
         parameters: {
-            move: "string"
+            move: "string",
+            start: "float",
+            end: "float",
         }
     }],
     insertDanceMove: [{
