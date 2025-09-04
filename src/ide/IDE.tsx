@@ -41,6 +41,7 @@ import * as userNotification from "../user/notification"
 import * as user from "../user/userState"
 import type { DAWData } from "common"
 import classNames from "classnames"
+import { cleanupAllDancers } from "../api/passthrough"
 
 const STATUS_SUCCESSFUL = 1
 const STATUS_UNSUCCESSFUL = 2
@@ -262,6 +263,8 @@ curriculum.callbacks.import = importExample
 
 // Run script in the editor and propagate the DAW data it generates.
 async function runScript() {
+    //Clean up dancers from previous run
+    cleanupAllDancers();
     if (isWaitingForServerResponse) return
 
     isWaitingForServerResponse = true

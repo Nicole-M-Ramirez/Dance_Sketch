@@ -49,8 +49,8 @@ class InternalError extends Error {
 
 // Generate initial result object.
 export function init() {
-    cleanupTriangle()
-    cleanupDancer()
+    //cleanupDancer()
+   
     
     return {
         init: true,
@@ -101,6 +101,7 @@ export function setTempo(result: DAWData, startTempo: number, start?: number, en
 // Run steps to clean up the script.
 export const finish = (result: DAWData) => {
     esconsole("Calling pt_finish from passthrough", "PT")
+    //CleanDancers()
 
     // We used to set a flag here. But all the flag indicated was whether the user called this function,
     // and this function didn't actually do anything *except* set that flag.
@@ -937,62 +938,22 @@ export function NumPrint(result: DAWData, number: number) {
     return number
 }
 
-// Function to display triangle.png when music is playing
-// export function One(result: DAWData) {
-//     const args = [...arguments].slice(1)
-//     esconsole("Calling One function", ["debug", "PT"])
 
-//     // Remove any existing triangle container and its subscription
-//     cleanupTriangle()
+let dancerCounter = 0;
 
-//     const triangleComponent = document.createElement('div')
-//     triangleComponent.id = 'triangle-container'
-//     triangleComponent.style.cssText = `
-//         position: fixed;
-//         top: 20px;
-//         right: 20px;
-//         z-index: 1000;
-//         transition: opacity 0.3s ease;
-//         opacity: 0;
-//     `
+export function Setup_Dancer(result: DAWData, move: string, start: number, end: number) {
     
-//     const triangleImage = document.createElement('img')
-//     triangleImage.src = require('../../public/img/triangle.png')
-//     triangleImage.style.width = '100px'
-//     triangleImage.style.height = '100px'
-//     triangleComponent.appendChild(triangleImage)
-    
-//     document.body.appendChild(triangleComponent)
+    checkType("move", "string", move);
+    checkType("start", "number", start);
+    checkType("end", "number", end);
 
-//     // Show/hide triangle based on playback state
-//     const updateTriangleVisibility = () => {
-//         const isPlaying = store.getState().daw.playing
-//         triangleComponent.style.opacity = isPlaying ? '1' : '0'
-//     }
+    const danceMove = animations[move];
 
-//     // Initial visibility check
-//     updateTriangleVisibility()
-
-//     // Subscribe to state changes and store the unsubscribe function
-//     const unsubscribe = store.subscribe(updateTriangleVisibility)
-//     triangleComponent.dataset.unsubscribe = unsubscribe.toString()
-
-//     return result
-// }
-
-
-export function Setup_Dancer(result: DAWData, move : string, start: number, end: number) {
-
-    checkType("move", "string", move)
-    checkType("start", "number", start)
-    checkType("end", "number", end)
-
-    // Remove any existing dancer container and its subscription
-    cleanupDancer()
-    const danceMove = animations[move]
+    // Give each dancer a unique ID
+    const dancerId = `dancer-container-${dancerCounter++}`;
 
     const dancerComponent = document.createElement("div");
-    dancerComponent.id = "dancer-container";
+    dancerComponent.id = dancerId;
     dancerComponent.style.cssText = `
         position: fixed;
         top: 8%;
@@ -1005,10 +966,13 @@ export function Setup_Dancer(result: DAWData, move : string, start: number, end:
     const lottieContainer = document.createElement("div");
     lottieContainer.style.width = "200px";
     lottieContainer.style.height = "200px";
-    lottieContainer.id = "dancer-lottie";
+    lottieContainer.id = `dancer-lottie-${dancerId}`;
+
+    
 
     dancerComponent.appendChild(lottieContainer);
     document.body.appendChild(dancerComponent);
+
 
     const animation = lottie.loadAnimation({
         container: lottieContainer,
@@ -1018,105 +982,94 @@ export function Setup_Dancer(result: DAWData, move : string, start: number, end:
         path: danceMove,
     });
 
-    const tempoMap = new TempoMap(result)
-    const currentTempo = tempoMap.getTempoAtMeasure(1)
+    const tempoMap = new TempoMap(result);
+    const currentTempo = tempoMap.getTempoAtMeasure(1);
 
-    //La velocidad de la animación es igual a la velocidad de la música
-    //animation.setSpeed(currentTempo*0.01)
+    // Normalize frame count (0–100)
+    const newStart = Math.round((start / 100) * animation.totalFrames);
+    const newEnd = Math.round((end / 100) * animation.totalFrames);
 
-    //permite que la animación se inicie en un frame especifico
-    // animation.addEventListener("DOMLoaded", () => {
-    //     console.log("Total frames:", animation.totalFrames)
-    //     //const middleFrame = animation.totalFrames / 2;
-    //     animation.goToAndPlay(start, true);
-    // });
+    // Animation speed tied to tempo
+    animation.setSpeed(currentTempo * 0.01);
+
     animation.addEventListener("DOMLoaded", () => {
-        console.log("Total frames:", animation.totalFrames);
-    
-        // Play only between `start` and `end`
-        animation.playSegments([start, end], true);
+        animation.playSegments([newStart, newEnd], true);
     });
 
+    // Control visibility per global DAW play/pause
     const updateDancerVisibility = () => {
-        //console.log("updating dancer visibility")
         const isPlaying = store.getState().daw.playing;
         if (isPlaying) {
-            //dancerComponent.style.opacity = "1";
-            animation.play(); 
+            animation.play();
         } else {
-            //dancerComponent.style.opacity = "0";
             animation.pause();
         }
     };
 
-
     updateDancerVisibility();
-    //checkCurrFrame();
-    //updateCurrentFrame();
     const unsubscribe = store.subscribe(updateDancerVisibility);
+
+    // Store cleanup reference for this specific dancer
     dancerComponent.dataset.unsubscribe = unsubscribe.toString();
 
- 
-    return result
+    //cleanupDancer();
+    return result;
 }
-    
 
-
-
-// Helper function to clean up triangle
-function cleanupTriangle() {
-    const existingContainer = document.getElementById('triangle-container')
-    if (existingContainer) {
-        // Get the unsubscribe function from the container's data attribute
-        const unsubscribeStr = existingContainer.dataset.unsubscribe
+export function cleanupAllDancers() {
+    const dancerDivs = document.querySelectorAll('[id^="dancer-container"]');
+    dancerDivs.forEach(div => {
+        // Unsubscribe if needed
+        const unsubscribeStr = (div as HTMLElement).dataset.unsubscribe;
         if (unsubscribeStr) {
             try {
-                const unsubscribe = new Function('return ' + unsubscribeStr)()
-                unsubscribe()
+                const unsubscribe = new Function('return ' + unsubscribeStr)();
+                unsubscribe();
             } catch (e) {
-                console.error('Error unsubscribing from store:', e)
+                console.error('Error unsubscribing from store:', e);
             }
         }
-        existingContainer.remove()
-    }
+        div.remove();
+    });
 }
 
-function cleanupDancer() {
-    const existingContainer = document.getElementById('dancer-container')
-    if (existingContainer) {
-        // Prefer direct property unsubscribe if present
-        const unsubscribeFn = (existingContainer as any)._unsubscribe
-        if (typeof unsubscribeFn === 'function') {
-            try { unsubscribeFn() } catch (e) { console.error('Error unsubscribing from store:', e) }
-        } else {
-            // Backward compatibility: dataset stringified function
-            const unsubscribeStr = existingContainer.dataset.unsubscribe
-            if (unsubscribeStr) {
-                try {
-                    const unsubscribe = new Function('return ' + unsubscribeStr)()
-                    unsubscribe()
-                } catch (e) {
-                    console.error('Error unsubscribing from store:', e)
-                }
-            }
-        }
+
+// function cleanupDancer() {
+//     const existingContainer = document.getElementById(`dancer-lottie`)
+//     if (existingContainer) {
+//         // Prefer direct property unsubscribe if present
+//         const unsubscribeFn = (existingContainer as any)._unsubscribe
+//         if (typeof unsubscribeFn === 'function') {
+//             try { unsubscribeFn() } catch (e) { console.error('Error unsubscribing from store:', e) }
+//         } else {
+//             // Backward compatibility: dataset stringified function
+//             const unsubscribeStr = existingContainer.dataset.unsubscribe
+//             if (unsubscribeStr) {
+//                 try {
+//                     const unsubscribe = new Function('return ' + unsubscribeStr)()
+//                     unsubscribe()
+//                 } catch (e) {
+//                     console.error('Error unsubscribing from store:', e)
+//                 }
+//             }
+//         }
         
-        // Stop lottie animation if present
-        const lottieContainer = existingContainer.querySelector('#dancer-lottie') as HTMLElement
-        if (lottieContainer && (lottieContainer as any).lottieInstance) {
-            try {
-                const lottieInstance = (lottieContainer as any).lottieInstance
-                if (lottieInstance && typeof lottieInstance.destroy === 'function') {
-                    lottieInstance.destroy()
-                }
-            } catch (e) {
-                console.warn('Error destroying lottie instance:', e)
-            }
-        }
+//         // Stop lottie animation if present
+//         const lottieContainer = existingContainer.querySelector('#dancer-lottie') as HTMLElement
+//         if (lottieContainer && (lottieContainer as any).lottieInstance) {
+//             try {
+//                 const lottieInstance = (lottieContainer as any).lottieInstance
+//                 if (lottieInstance && typeof lottieInstance.destroy === 'function') {
+//                     lottieInstance.destroy()
+//                 }
+//             } catch (e) {
+//                 console.warn('Error destroying lottie instance:', e)
+//             }
+//         }
         
-        existingContainer.remove()
-    }
-}
+//         existingContainer.remove()
+//     }
+// }
 
 
 
