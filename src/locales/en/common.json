@@ -710,6 +710,25 @@
       }
     },
 
+    "Setup_Dancer": {
+      "description": "Sets up the dancer with the specified parameters.",
+      "parameters": {
+        "move": {
+          "description": "Choose the dance move the dancer will perform."
+        },
+        "start": {
+          "description":"Frame where the animation will start."
+        },
+        "end": {
+          "description": "Frame where the animation will end."
+        }
+      },
+      "example": {
+        "python": "# Add a dancer to the music as nesesarry\n# Here the dancer start in the middle and ends in the end of the animation 9\nSetup_Dancer('Jump', 50, 100)",
+        "javascript": "// Add a dancer to the music as nesesarry\n// Here the dancer start in the middle and ends in the end of the animation 9\nSetup_Dancer('Jump', 50, 100);"
+      }
+    },
+
     "importImage": {
       "description": "This function retrieves an image from the web and converts it into a two-dimensional array/list of grayscale values or a three-dimensional list of RGB color values, scaled to the specified number of rows and columns.",
       "parameters": {

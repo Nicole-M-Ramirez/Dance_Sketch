@@ -943,37 +943,42 @@ let dancerCounter = 0;
 
 export function Setup_Dancer(result: DAWData, move: string, start: number, end: number) {
     
+    //Type checkers
     checkType("move", "string", move);
     checkType("start", "number", start);
     checkType("end", "number", end);
 
+    //Get the animation file path
     const danceMove = animations[move];
 
     // Give each dancer a unique ID
     const dancerId = `dancer-container-${dancerCounter++}`;
 
+    //Create dancer component
     const dancerComponent = document.createElement("div");
     dancerComponent.id = dancerId;
     dancerComponent.style.cssText = `
         position: fixed;
-        top: 8%;
-        left: 67%;
+        top: 0%;
+        left: 80%;
         z-index: 1;
         transition: opacity 0.3s ease;
         opacity: 1;
     `;
 
+    //Create dancer container
     const lottieContainer = document.createElement("div");
     lottieContainer.style.width = "200px";
     lottieContainer.style.height = "200px";
+    lottieContainer.style.left = "200px";
     lottieContainer.id = `dancer-lottie-${dancerId}`;
 
     
-
+    //Append dancer to body
     dancerComponent.appendChild(lottieContainer);
     document.body.appendChild(dancerComponent);
 
-
+    //Animation settings
     const animation = lottie.loadAnimation({
         container: lottieContainer,
         renderer: "svg",
@@ -982,26 +987,85 @@ export function Setup_Dancer(result: DAWData, move: string, start: number, end: 
         path: danceMove,
     });
 
+    //Get current tempo of user
     const tempoMap = new TempoMap(result);
     const currentTempo = tempoMap.getTempoAtMeasure(1);
+
+    // Animation speed tied to tempo
+    animation.setSpeed(currentTempo * 0.01)
 
     // Normalize frame count (0–100)
     const newStart = Math.round((start / 100) * animation.totalFrames);
     const newEnd = Math.round((end / 100) * animation.totalFrames);
+;
 
-    // Animation speed tied to tempo
-    animation.setSpeed(currentTempo * 0.01);
+    let stopTime: number | null = null;
+    let loopInterval: number | null = null;
+    let isPlaying = false;
 
-    animation.addEventListener("DOMLoaded", () => {
+    //Funtion to play animation for 1 compass
+    const playForOneSecond = () => {
+
+        let seconds = ((240) / currentTempo) * 1000;
+        stopTime = Date.now() + seconds; // 1 second window
         animation.playSegments([newStart, newEnd], true);
-    });
+
+        // Clear any old loop
+        if (loopInterval) {
+            clearInterval(loopInterval);
+            loopInterval = null;
+        }
+
+        // Calculate segment duration in ms
+        const segmentDuration =
+            ((newEnd - newStart) / animation.frameRate) * seconds / (currentTempo * 0.01);
+
+        // Repeat the segment until stopTime
+        loopInterval = window.setInterval(() => {
+            if (Date.now() >= (stopTime ?? 0)) {
+                animation.stop();
+                clearInterval(loopInterval!);
+                loopInterval = null;
+                return;
+            }
+            animation.playSegments([newStart, newEnd], true);
+        }, segmentDuration);
+    };
+
+    // animation.addEventListener("DOMLoaded", () => {
+    //     //animation.playSegments([newStart, newEnd], true);
+    // });
 
     // Control visibility per global DAW play/pause
+    // const updateDancerVisibility = () => {
+    //     const isPlaying = store.getState().daw.playing;
+    //     //const playhead = store.getState().daw.playhead;
+    //     if (isPlaying ) {
+    //         animation.play();
+    //     } else {
+    //         animation.pause();
+    //     }
+
+    //     //console.log("Playhead:", playhead);
+    // };
+
+    //Update dancer visibility based on DAW play state
     const updateDancerVisibility = () => {
-        const isPlaying = store.getState().daw.playing;
-        if (isPlaying) {
-            animation.play();
-        } else {
+       isPlaying = store.getState().daw.playing;
+
+        if (stopTime && Date.now() >= stopTime) {
+            // past 1s → always stop
+            animation.stop();
+            return;
+        }
+
+        if (isPlaying && !stopTime) {
+            // first time play → trigger loop
+            playForOneSecond();
+        }
+
+        if (!isPlaying) {
+            // immediately pause current loop
             animation.pause();
         }
     };
