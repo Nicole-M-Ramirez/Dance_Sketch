@@ -26,6 +26,7 @@ import * as player from "../audio/player"
 import { animations } from "../data/Animations"
 import { setPlaying } from "../daw/dawState"
 import lottie from "lottie-web";
+import { start } from "@popperjs/core"
 
 
 
@@ -941,12 +942,11 @@ export function NumPrint(result: DAWData, number: number) {
 
 let dancerCounter = 0;
 
-export function Setup_Dancer(result: DAWData, move: string, start: number, end: number) {
+export function Setup_Dancer(result: DAWData, move: string, timesPlayed: number) {
     
     //Type checkers
     checkType("move", "string", move);
-    checkType("start", "number", start);
-    checkType("end", "number", end);
+
 
     //Get the animation file path
     const danceMove = animations[move];
@@ -982,7 +982,7 @@ export function Setup_Dancer(result: DAWData, move: string, start: number, end: 
     const animation = lottie.loadAnimation({
         container: lottieContainer,
         renderer: "svg",
-        loop: false,
+        loop: true,
         autoplay: false,
         path: danceMove,
     });
@@ -994,11 +994,7 @@ export function Setup_Dancer(result: DAWData, move: string, start: number, end: 
     // Animation speed tied to tempo
     animation.setSpeed(currentTempo * 0.01)
 
-    // Normalize frame count (0–100)
-    const newStart = Math.round((start / 100) * animation.totalFrames);
-    const newEnd = Math.round((end / 100) * animation.totalFrames);
-;
-
+    //Variables to control animation timing
     let stopTime: number | null = null;
     let loopInterval: number | null = null;
     let isPlaying = false;
@@ -1006,19 +1002,15 @@ export function Setup_Dancer(result: DAWData, move: string, start: number, end: 
     //Funtion to play animation for 1 compass
     const playForOneSecond = () => {
 
-        let seconds = ((240) / currentTempo) * 1000;
+        let seconds = (((240) / currentTempo)  * timesPlayed) * 1000; // in ms
         stopTime = Date.now() + seconds; // 1 second window
-        animation.playSegments([newStart, newEnd], true);
+        animation.play()
 
         // Clear any old loop
         if (loopInterval) {
             clearInterval(loopInterval);
             loopInterval = null;
         }
-
-        // Calculate segment duration in ms
-        const segmentDuration =
-            ((newEnd - newStart) / animation.frameRate) * seconds / (currentTempo * 0.01);
 
         // Repeat the segment until stopTime
         loopInterval = window.setInterval(() => {
@@ -1028,27 +1020,10 @@ export function Setup_Dancer(result: DAWData, move: string, start: number, end: 
                 loopInterval = null;
                 return;
             }
-            animation.playSegments([newStart, newEnd], true);
-        }, segmentDuration);
+            animation.play();
+        }, seconds);
     };
-
-    // animation.addEventListener("DOMLoaded", () => {
-    //     //animation.playSegments([newStart, newEnd], true);
-    // });
-
-    // Control visibility per global DAW play/pause
-    // const updateDancerVisibility = () => {
-    //     const isPlaying = store.getState().daw.playing;
-    //     //const playhead = store.getState().daw.playhead;
-    //     if (isPlaying ) {
-    //         animation.play();
-    //     } else {
-    //         animation.pause();
-    //     }
-
-    //     //console.log("Playhead:", playhead);
-    // };
-
+    
     //Update dancer visibility based on DAW play state
     const updateDancerVisibility = () => {
        isPlaying = store.getState().daw.playing;

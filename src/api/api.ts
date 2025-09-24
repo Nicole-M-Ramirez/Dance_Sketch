@@ -176,8 +176,9 @@ const rawDoc: { [key: string]: Item[] } = {
     Setup_Dancer: [{
         parameters: {
             move: "string",
-            start: "float",
-            end: "float",
+            //start: "float",
+            //end: "float",
+            timesPlayed: "integer"
         }
     }],
     insertDanceMove: [{
