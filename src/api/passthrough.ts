@@ -942,22 +942,42 @@ export function NumPrint(result: DAWData, number: number) {
 
 let dancerCounter = 0;
 
-export function Setup_Dancer(result: DAWData, move: string, timesPlayed: number) {
-    
-    //Type checkers
-    checkType("move", "string", move);
+// Simple sequential queue for dance animations
+type DanceTask = { result: DAWData, move: string, timesPlayed: number };
+let danceQueue: DanceTask[] = [];
+let isDanceQueueRunning = false;
 
+function enqueueDance(task: DanceTask) {
+    danceQueue.push(task);
+    if (!isDanceQueueRunning) processNextDance();
+}
 
-    //Get the animation file path
-    const danceMove = animations[move];
+function processNextDance() {
+    if (danceQueue.length === 0) {
+        isDanceQueueRunning = false;
+        return;
+    }
+    isDanceQueueRunning = true;
+    const task = danceQueue.shift()!;
+    runDanceTask(task).then(() => {
+        processNextDance();
+    }).catch(() => {
+        processNextDance();
+    });
+}
 
-    // Give each dancer a unique ID
-    const dancerId = `dancer-container-${dancerCounter++}`;
+function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
+    return new Promise<void>((resolve) => {
+        //Get the animation file path
+        const danceMove = animations[move];
 
-    //Create dancer component
-    const dancerComponent = document.createElement("div");
-    dancerComponent.id = dancerId;
-    dancerComponent.style.cssText = `
+        // Give each dancer a unique ID
+        const dancerId = `dancer-container-${dancerCounter++}`;
+
+        //Create dancer component
+        const dancerComponent = document.createElement("div");
+        dancerComponent.id = dancerId;
+        dancerComponent.style.cssText = `
         position: fixed;
         top: 0%;
         left: 80%;
@@ -966,94 +986,103 @@ export function Setup_Dancer(result: DAWData, move: string, timesPlayed: number)
         opacity: 1;
     `;
 
-    //Create dancer container
-    const lottieContainer = document.createElement("div");
-    lottieContainer.style.width = "200px";
-    lottieContainer.style.height = "200px";
-    lottieContainer.style.left = "200px";
-    lottieContainer.id = `dancer-lottie-${dancerId}`;
+        //Create dancer container
+        const lottieContainer = document.createElement("div");
+        lottieContainer.style.width = "200px";
+        lottieContainer.style.height = "200px";
+        lottieContainer.style.left = "200px";
+        lottieContainer.id = `dancer-lottie-${dancerId}`;
 
-    
-    //Append dancer to body
-    dancerComponent.appendChild(lottieContainer);
-    document.body.appendChild(dancerComponent);
+        //Append dancer to body
+        dancerComponent.appendChild(lottieContainer);
+        document.body.appendChild(dancerComponent);
 
-    //Animation settings
-    const animation = lottie.loadAnimation({
-        container: lottieContainer,
-        renderer: "svg",
-        loop: true,
-        autoplay: false,
-        path: danceMove,
-    });
+        //Animation settings
+        const animation = lottie.loadAnimation({
+            container: lottieContainer,
+            renderer: "svg",
+            loop: true,
+            autoplay: false,
+            path: danceMove,
+        });
 
-    //Get current tempo of user
-    const tempoMap = new TempoMap(result);
-    const currentTempo = tempoMap.getTempoAtMeasure(1);
+        //Get current tempo of user
+        const tempoMap = new TempoMap(result);
+        const currentTempo = tempoMap.getTempoAtMeasure(1);
 
-    // Animation speed tied to tempo
-    animation.setSpeed(currentTempo * 0.01)
+        // Animation speed tied to tempo
+        animation.setSpeed(currentTempo * 0.01)
 
-    //Variables to control animation timing
-    let stopTime: number | null = null;
-    let loopInterval: number | null = null;
-    let isPlaying = false;
+        //Variables to control animation timing
+        let stopTime: number | null = null;
+        let loopInterval: number | null = null;
 
-    //Funtion to play animation for 1 compass
-    const playForOneSecond = () => {
+        //Funtion to play animation for N measures
+        const playForCompass = () => {
+            let milliseconds = (((240) / currentTempo) * timesPlayed) * 1000; // in ms
+            stopTime = Date.now() + milliseconds;
+            animation.play()
 
-        let seconds = (((240) / currentTempo)  * timesPlayed) * 1000; // in ms
-        stopTime = Date.now() + seconds; // 1 second window
-        animation.play()
-
-        // Clear any old loop
-        if (loopInterval) {
-            clearInterval(loopInterval);
-            loopInterval = null;
-        }
-
-        // Repeat the segment until stopTime
-        loopInterval = window.setInterval(() => {
-            if (Date.now() >= (stopTime ?? 0)) {
-                animation.stop();
-                clearInterval(loopInterval!);
+            // Clear any old loop
+            if (loopInterval) {
+                clearInterval(loopInterval);
                 loopInterval = null;
+            }
+
+            // Repeat the segment until stopTime
+            loopInterval = window.setInterval(() => {
+                if (Date.now() >= (stopTime ?? 0)) {
+                    animation.stop();
+                    clearInterval(loopInterval!);
+                    loopInterval = null;
+                    finish();
+                    return;
+                }
+                animation.play();
+            }, milliseconds);
+        };
+
+        const finish = () => {
+            try { animation.stop(); } catch { }
+            try {
+                if (unsubscribe) unsubscribe();
+            } catch { }
+            try { dancerComponent.remove(); } catch { }
+            resolve();
+        };
+
+        //Update dancer visibility based on DAW play state
+        const updateDancerVisibility = () => {
+            const isPlaying = store.getState().daw.playing;
+
+            if (stopTime && Date.now() >= stopTime) {
+                animation.stop();
+                finish();
                 return;
             }
-            animation.play();
-        }, seconds);
-    };
-    
-    //Update dancer visibility based on DAW play state
-    const updateDancerVisibility = () => {
-       isPlaying = store.getState().daw.playing;
 
-        if (stopTime && Date.now() >= stopTime) {
-            // past 1s → always stop
-            animation.stop();
-            return;
-        }
+            if (isPlaying && !stopTime) {
+                playForCompass();
+            }
 
-        if (isPlaying && !stopTime) {
-            // first time play → trigger loop
-            playForOneSecond();
-        }
+            if (!isPlaying) {
+                animation.pause();
+            }
+        };
 
-        if (!isPlaying) {
-            // immediately pause current loop
-            animation.pause();
-        }
-    };
+        updateDancerVisibility();
+        const unsubscribe = store.subscribe(updateDancerVisibility);
+    });
+}
 
-    updateDancerVisibility();
-    const unsubscribe = store.subscribe(updateDancerVisibility);
+export function Setup_Dancer(result: DAWData, move: string, timesPlayed: number) {
+    //Type checkers
+    checkType("move", "string", move);
 
-    // Store cleanup reference for this specific dancer
-    dancerComponent.dataset.unsubscribe = unsubscribe.toString();
-
-    //cleanupDancer();
+    enqueueDance({ result, move, timesPlayed });
     return result;
 }
+
 
 export function cleanupAllDancers() {
     const dancerDivs = document.querySelectorAll('[id^="dancer-container"]');
