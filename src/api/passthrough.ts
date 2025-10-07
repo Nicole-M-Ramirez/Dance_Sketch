@@ -973,52 +973,65 @@ function runDanceTask({ result, ani_1, ani_2, timesPlayed }: DanceTask): Promise
         //const animation_1 = animations[ani_1];
         //const animation_2 = animations[ani_2];
 
-        // Give each dancer a unique ID
-        //const dancerId = `dancer-container-${dancerCounter++}`;
-        const BlockId = `dancer-container-${dancerCounter++}`;
+		// Give each dancer a unique base ID
+		const BlockId = `dancer-container-${dancerCounter++}`;
 
-        //Create dancer component
-        const dancerComponent = document.createElement("div");
-        dancerComponent.id = BlockId;
-        dancerComponent.style.cssText = `
-        position: fixed;
-        top: 0%;
-        left: 80%;
-        z-index: 1;
-        transition: opacity 0.3s ease;
-        opacity: 1;
-    `;
+		// Create TWO independent dancer components so each animation can be positioned separately
+		const dancerComponent1 = document.createElement("div");
+		dancerComponent1.id = `${BlockId}-1`;
+		dancerComponent1.style.cssText = `
+		position: fixed;
+		top: 50%;
+		left: 70%;
+		z-index: 1;
+		transition: opacity 0.3s ease;
+		opacity: 1;
+	`;
 
-        //Create dancer container
-        const lottieContainer = document.createElement("div");
-        lottieContainer.style.width = "200px";
-        lottieContainer.style.height = "200px";
-        lottieContainer.style.left = "200px";
-        lottieContainer.id = `dancer-lottie-${BlockId}`;
+		const dancerComponent2 = document.createElement("div");
+		dancerComponent2.id = `${BlockId}-2`;
+		dancerComponent2.style.cssText = `
+		position: fixed;
+		top: 50%;
+		left: 85%;
+		z-index: 1;
+		transition: opacity 0.3s ease;
+		opacity: 1;
+	`;
 
-        //Append dancer to body
-        dancerComponent.appendChild(lottieContainer);
-        document.body.appendChild(dancerComponent);
+		// Create separate lottie containers for each animation
+		const lottieContainer1 = document.createElement("div");
+		lottieContainer1.style.width = "200px";
+		lottieContainer1.style.height = "200px";
+		lottieContainer1.id = `dancer-lottie-${BlockId}-1`;
 
-        //Animation settings
-        //const animation = lottie.loadAnimation({
-        const animation_1= lottie.loadAnimation({
-            container: lottieContainer,
-            renderer: "svg",
-            loop: true,
-            autoplay: false,
-            //path: danceMove,
-            path: animations[ani_1],
-        });
+		const lottieContainer2 = document.createElement("div");
+		lottieContainer2.style.width = "200px";
+		lottieContainer2.style.height = "200px";
+		lottieContainer2.id = `dancer-lottie-${BlockId}-2`;
 
-        const animation_2 = lottie.loadAnimation({
-            container: lottieContainer,
-            renderer: "svg",
-            loop: true,
-            autoplay: false,
-            //path: danceMove,
-            path: animations[ani_2],
-        });
+		// Append to DOM
+		dancerComponent1.appendChild(lottieContainer1);
+		dancerComponent2.appendChild(lottieContainer2);
+		document.body.appendChild(dancerComponent1);
+		document.body.appendChild(dancerComponent2);
+
+		// Animation settings
+		const animation_1 = lottie.loadAnimation({
+			container: lottieContainer1,
+			renderer: "svg",
+			loop: true,
+			autoplay: false,
+			path: animations[ani_1],
+		});
+
+		const animation_2 = lottie.loadAnimation({
+			container: lottieContainer2,
+			renderer: "svg",
+			loop: true,
+			autoplay: false,
+			path: animations[ani_2],
+		});
 
         //Get current tempo of user
         const tempoMap = new TempoMap(result);
@@ -1072,14 +1085,15 @@ function runDanceTask({ result, ani_1, ani_2, timesPlayed }: DanceTask): Promise
         //     try { dancerComponent.remove(); } catch { }
         //     resolve();
         // };
-        const finish = () => {
-            try { animation_1.stop(); animation_2.stop(); } catch { }
-            try {
-                if (unsubscribe) unsubscribe();
-            } catch { }
-            try { dancerComponent.remove(); } catch { }
-            resolve();
-        };
+		const finish = () => {
+			try { animation_1.stop(); animation_2.stop(); } catch { }
+			try {
+				if (unsubscribe) unsubscribe();
+			} catch { }
+			try { dancerComponent1.remove(); } catch { }
+			try { dancerComponent2.remove(); } catch { }
+			resolve();
+		};
 
         //Update dancer visibility based on DAW play state
         const updateDancerVisibility = () => {
