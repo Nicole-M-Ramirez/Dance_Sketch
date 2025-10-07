@@ -943,7 +943,7 @@ export function NumPrint(result: DAWData, number: number) {
 let dancerCounter = 0;
 
 // Simple sequential queue for dance animations
-type DanceTask = { result: DAWData, move: string, timesPlayed: number };
+type DanceTask = { result: DAWData, ani_1: string, ani_2: string, timesPlayed: number };
 let danceQueue: DanceTask[] = [];
 let isDanceQueueRunning = false;
 
@@ -966,17 +966,20 @@ function processNextDance() {
     });
 }
 
-function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
+function runDanceTask({ result, ani_1, ani_2, timesPlayed }: DanceTask): Promise<void> {
     return new Promise<void>((resolve) => {
         //Get the animation file path
-        const danceMove = animations[move];
+        //const danceMove = animations[move];
+        //const animation_1 = animations[ani_1];
+        //const animation_2 = animations[ani_2];
 
         // Give each dancer a unique ID
-        const dancerId = `dancer-container-${dancerCounter++}`;
+        //const dancerId = `dancer-container-${dancerCounter++}`;
+        const BlockId = `dancer-container-${dancerCounter++}`;
 
         //Create dancer component
         const dancerComponent = document.createElement("div");
-        dancerComponent.id = dancerId;
+        dancerComponent.id = BlockId;
         dancerComponent.style.cssText = `
         position: fixed;
         top: 0%;
@@ -991,19 +994,30 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
         lottieContainer.style.width = "200px";
         lottieContainer.style.height = "200px";
         lottieContainer.style.left = "200px";
-        lottieContainer.id = `dancer-lottie-${dancerId}`;
+        lottieContainer.id = `dancer-lottie-${BlockId}`;
 
         //Append dancer to body
         dancerComponent.appendChild(lottieContainer);
         document.body.appendChild(dancerComponent);
 
         //Animation settings
-        const animation = lottie.loadAnimation({
+        //const animation = lottie.loadAnimation({
+        const animation_1= lottie.loadAnimation({
             container: lottieContainer,
             renderer: "svg",
             loop: true,
             autoplay: false,
-            path: danceMove,
+            //path: danceMove,
+            path: animations[ani_1],
+        });
+
+        const animation_2 = lottie.loadAnimation({
+            container: lottieContainer,
+            renderer: "svg",
+            loop: true,
+            autoplay: false,
+            //path: danceMove,
+            path: animations[ani_2],
         });
 
         //Get current tempo of user
@@ -1011,7 +1025,9 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
         const currentTempo = tempoMap.getTempoAtMeasure(1);
 
         // Animation speed tied to tempo
-        animation.setSpeed(currentTempo * 0.01)
+        //animation.setSpeed(currentTempo * 0.01)
+        animation_1.setSpeed(currentTempo * 0.01)
+        animation_2.setSpeed(currentTempo * 0.01)
 
         //Variables to control animation timing
         let stopTime: number | null = null;
@@ -1021,7 +1037,9 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
         const playForCompass = () => {
             let milliseconds = (((240) / currentTempo) * timesPlayed) * 1000; // in ms
             stopTime = Date.now() + milliseconds;
-            animation.play()
+            //animation.play()
+            animation_1.play()
+            animation_2.play()
 
             // Clear any old loop
             if (loopInterval) {
@@ -1032,18 +1050,30 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
             // Repeat the segment until stopTime
             loopInterval = window.setInterval(() => {
                 if (Date.now() >= (stopTime ?? 0)) {
-                    animation.stop();
+                    //animation.stop();
+                    animation_1.stop();
+                    animation_2.stop();
                     clearInterval(loopInterval!);
                     loopInterval = null;
                     finish();
                     return;
                 }
-                animation.play();
+                //animation.play();
+                animation_1.play();
+                animation_2.play();
             }, milliseconds);
         };
 
+        // const finish = () => {
+        //     try { animation.stop(); } catch { }
+        //     try {
+        //         if (unsubscribe) unsubscribe();
+        //     } catch { }
+        //     try { dancerComponent.remove(); } catch { }
+        //     resolve();
+        // };
         const finish = () => {
-            try { animation.stop(); } catch { }
+            try { animation_1.stop(); animation_2.stop(); } catch { }
             try {
                 if (unsubscribe) unsubscribe();
             } catch { }
@@ -1056,7 +1086,9 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
             const isPlaying = store.getState().daw.playing;
 
             if (stopTime && Date.now() >= stopTime) {
-                animation.stop();
+                //animation.stop();
+                animation_1.stop();
+                animation_2.stop();
                 finish();
                 return;
             }
@@ -1066,7 +1098,9 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
             }
 
             if (!isPlaying) {
-                animation.pause();
+                //animation.pause();
+                animation_1.pause();
+                animation_2.pause();
             }
         };
 
@@ -1075,11 +1109,12 @@ function runDanceTask({ result, move, timesPlayed }: DanceTask): Promise<void> {
     });
 }
 
-export function Setup_Dancer(result: DAWData, move: string, timesPlayed: number) {
+export function Setup_Dancer(result: DAWData, ani_1: string, ani_2: string, timesPlayed: number) {
     //Type checkers
-    checkType("move", "string", move);
+    checkType("ani_1", "string", ani_1);
+    checkType("ani_2", "string", ani_2);
 
-    enqueueDance({ result, move, timesPlayed });
+    enqueueDance({ result, ani_1, ani_2, timesPlayed });
     return result;
 }
 
