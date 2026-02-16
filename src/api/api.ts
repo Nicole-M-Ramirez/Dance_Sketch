@@ -22,7 +22,8 @@ export const API_FUNCTIONS = {
     rhythmEffects: { async: false, mod: true, return: false },
     setEffect: { async: false, mod: true, return: false },
     One: { async: false, mod: true, return: false }, // Function to display triangle.png
-    Setup_Dancer: { async: false, mod: true, return: false }, // Function to display triangle.png
+    //Setup_Dancer: { async: false, mod: true, return: false }, // Function to display triangle.png
+    fitDance: { async: false, mod: true, return: false },
     beat:{ async: false, mod: true, return: false}, //funcion que aga print 1 cada 3 beats
     NumPrint: { async: false, mod: false, return: true },
     // Return value, don't modify DAW data.
@@ -173,18 +174,28 @@ const rawDoc: { [key: string]: Item[] } = {
             end: "float",
         },
     }],
-    Setup_Dancer: [{
+    // Setup_Dancer: [{
+    //     parameters: {
+    //         ani_1: "string",
+    //         ani_2: "string",
+    //         start:"integer",
+    //         end: "integer",
+    //     }
+    // }],
+    fitDance: [{
         parameters: {
             ani_1: "string",
             ani_2: "string",
-            timesPlayed: "integer"
+            start:"integer",
+            end: "integer",
         }
     }],
     insertDanceMove: [{
         parameters: {
-            move: "string",
-            start: "float",
-            end: "float",
+            l_arm_move: "string",
+            r_arm_move: "string",
+            start: "integer",
+            repeat: "integer",
         },
     }],
     importImage: [{

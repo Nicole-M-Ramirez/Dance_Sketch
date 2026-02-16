@@ -58,6 +58,14 @@ export interface Clip {
     sourceLine: number
 }
 
+export interface DanceBlock {
+    l_arm_move: string,
+    r_arm_move : string,
+    measure: number;
+    repeat: number;
+    silence: number
+} 
+
 export type TransformedClip = SlicedClip | StretchedClip
 
 export interface SlicedClip {

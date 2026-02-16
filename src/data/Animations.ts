@@ -8,4 +8,9 @@ export const animations: Record<string, string> = {
     CAT: "/video/DanceCat.json",
     //BALL: "https://lottie.host/d695ad9f-bfc8-40e5-998f-e8294aaae860/zHaLvMjuSC.json",
     BAR: "/video/music.json",
+    L_ARM: "/video/left_arm.json",
+    L_LEG: "/video/left_leg.json",
+    R_ARM: "/video/right_arm.json",
+    R_LEG: "/video/right_leg.json",
+    TORSO: "/video/torso_head.json",
   };
