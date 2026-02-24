@@ -18,8 +18,9 @@ import { addUIClick } from "../cai/dialogue/student"
 import { clearDAWHoverLine, setDAWHoverLine, setDAWPlayingLines } from "../ide/Editor"
 import { selectPlayArrows, selectScriptMatchesDAW } from "../ide/ideState"
 import classNames from "classnames"
-import CatDanceAnimation from '../components/CatDanceAnimation'
-import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import CatDanceAnimation from "../components/CatDanceAnimation"
+import HipHopFBXViewer from "../components/HipHopFBXViewer"
+import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 
 import { selectTempoMap } from './dawState'
 
@@ -1323,6 +1324,7 @@ export const DAW = () => {
         {/* <CatDanceAnimation />
         <DancingStickFigure /> */}
         <PlaybackIndicator />
+        <HipHopFBXViewer />
 
         {!hideDAW &&
         <div id="zoom-container" className="grow relative w-full h-full flex flex-col overflow-x-auto overflow-y-hidden z-0">

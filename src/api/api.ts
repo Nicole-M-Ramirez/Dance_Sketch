@@ -184,11 +184,10 @@ const rawDoc: { [key: string]: Item[] } = {
     // }],
     fitDance: [{
         parameters: {
-            ani_1: "string",
-            ani_2: "string",
-            start:"integer",
+            fbxName: "string",
+            start: "integer",
             end: "integer",
-        }
+        },
     }],
     insertDanceMove: [{
         parameters: {

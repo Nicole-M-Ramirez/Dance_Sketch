@@ -24,8 +24,7 @@ import store from "../reducers"
 import * as request from "../request"
 import * as player from "../audio/player"
 import { animations } from "../data/Animations"
-import { setPlaying } from "../daw/dawState"
-import lottie from "lottie-web";
+import { setPlaying, addFbxDanceTask, clearFbxDanceTasks } from "../daw/dawState"
 import { start } from "@popperjs/core"
 
 
@@ -50,9 +49,7 @@ class InternalError extends Error {
 
 // Generate initial result object.
 export function init() {
-    //cleanupDancer()
-   
-    
+     
     return {
         init: true,
         finish: false,
@@ -925,418 +922,39 @@ export function beat(result: DAWData, number: number) {
 }
 
 // Print a number and return it
-export function NumPrint(result: DAWData, number: number) {
-    const tempoMap = new TempoMap(result)
+// export function NumPrint(result: DAWData, number: number) {
+//     const tempoMap = new TempoMap(result)
 
-    //const tempo = tempoMap.getTempoAtMeasure(measure)
-     //println(result, tempoMap)
-    // const args = [...arguments].slice(1)
-    // esconsole("Calling NumPrint with parameters" + args.join(", "), ["debug", "PT"])
+//     //const tempo = tempoMap.getTempoAtMeasure(measure)
+//      //println(result, tempoMap)
+//     // const args = [...arguments].slice(1)
+//     // esconsole("Calling NumPrint with parameters" + args.join(", "), ["debug", "PT"])
 
-    // checkArgCount("NumPrint", args, 1, 1)
-    // checkType("number", "number", number)
+//     // checkArgCount("NumPrint", args, 1, 1)
+//     // checkType("number", "number", number)
     
-    return number
-}
+//     return number
+// }
 
 
-let dancerCounter = 0;
-// Track how many whole compases (measures) have already elapsed when the first dancer is set up
-// so we can subtract them across multiple Setup_Dancer calls.
-let skipBudgetInitialized = false
-let remainingSkippedCompases = 0
-
-// Simple sequential queue for dance animations
-type DanceTask = { result: DAWData, ani_1: string, ani_2: string, ani_3: string, ani_4: string, ani_5: string, ani_6: string, start: number, end: number };
-let danceQueue: DanceTask[] = [];
-let isDanceQueueRunning = false;
-
-function enqueueDance(task: DanceTask) {
-    danceQueue.push(task);
-    if (!isDanceQueueRunning) processNextDance();
-}
-
-function processNextDance() {
-    if (danceQueue.length === 0) {
-        isDanceQueueRunning = false;
-        return;
-    }
-    isDanceQueueRunning = true;
-    const task = danceQueue.shift()!;
-    runDanceTask(task).then(() => {
-        processNextDance();
-    }).catch(() => {
-        processNextDance();
-    });
-}
-
-function runDanceTask({ result, ani_1,ani_2,ani_3, ani_4, ani_5, ani_6, start, end }: DanceTask): Promise<void> {
-
-    return new Promise<void>((resolve) => {
-        //Get the animation file path
-        //const danceMove = animations[move];
-        //const animation_1 = animations[ani_1];
-        //const animation_2 = animations[ani_2];
-
-		// Give each dancer a unique base ID
-		const BlockId = `dancer-container-${dancerCounter++}`;
-
-		// Create TWO independent dancer components so each animation can be positioned separately
-		const dancerComponent1 = document.createElement("div");
-		dancerComponent1.id = `${BlockId}-1`;
-		dancerComponent1.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 70%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-
-		const dancerComponent2 = document.createElement("div");
-		dancerComponent2.id = `${BlockId}-2`;
-		dancerComponent2.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 85%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-
-        const dancerComponent3 = document.createElement("div");
-		dancerComponent3.id = `${BlockId}-3`;
-		dancerComponent3.style.cssText = `
-            position: fixed;
-            top: 30%;
-            left: 70%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-
-        const dancerComponent4 = document.createElement("div");
-		dancerComponent4.id = `${BlockId}-4`;
-		dancerComponent4.style.cssText = `
-            position: fixed;
-            top: 30%;
-            left: 85%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-
-        const dancerComponent5 = document.createElement("div");
-		dancerComponent5.id = `${BlockId}-5`;
-		dancerComponent5.style.cssText = `
-            position: fixed;
-            top: 10%;
-            left: 70%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-
-        const dancerComponent6 = document.createElement("div");
-		dancerComponent6.id = `${BlockId}-6`;
-		dancerComponent6.style.cssText = `
-            position: fixed;
-            top: 10%;
-            left: 85%;
-            z-index: 1;
-            transition: opacity 0.3s ease;
-            opacity: 1;
-	    `;
-    
-       
-		// Create separate lottie containers for each animation
-		const lottieContainer1 = document.createElement("div");
-		lottieContainer1.style.width = "200px";
-		lottieContainer1.style.height = "200px";
-		lottieContainer1.id = `dancer-lottie-${BlockId}-1`;
-
-		const lottieContainer2 = document.createElement("div");
-		lottieContainer2.style.width = "200px";
-		lottieContainer2.style.height = "200px";
-		lottieContainer2.id = `dancer-lottie-${BlockId}-2`;
-
-        const lottieContainer3 = document.createElement("div");
-		lottieContainer3.style.width = "200px";
-		lottieContainer3.style.height = "200px";
-		lottieContainer3.id = `dancer-lottie-${BlockId}-2`;
-
-        const lottieContainer4 = document.createElement("div");
-		lottieContainer4.style.width = "200px";
-		lottieContainer4.style.height = "200px";
-		lottieContainer4.id = `dancer-lottie-${BlockId}-2`;
-
-        const lottieContainer5 = document.createElement("div");
-		lottieContainer5.style.width = "200px";
-		lottieContainer5.style.height = "200px";
-		lottieContainer5.id = `dancer-lottie-${BlockId}-2`;
-
-        const lottieContainer6 = document.createElement("div");
-		lottieContainer6.style.width = "200px";
-		lottieContainer6.style.height = "200px";
-		lottieContainer6.id = `dancer-lottie-${BlockId}-2`;
-
-        
-
-		// Append to DOM
-		dancerComponent1.appendChild(lottieContainer1);
-		dancerComponent2.appendChild(lottieContainer2);
-        dancerComponent3.appendChild(lottieContainer3);
-        dancerComponent4.appendChild(lottieContainer4);
-        dancerComponent5.appendChild(lottieContainer5);
-        dancerComponent6.appendChild(lottieContainer6);
-		document.body.appendChild(dancerComponent1);
-		document.body.appendChild(dancerComponent2);
-        document.body.appendChild(dancerComponent3);
-        document.body.appendChild(dancerComponent4);
-        document.body.appendChild(dancerComponent5);
-        document.body.appendChild(dancerComponent6);
-
-		// Animation settings
-		const animation_1 = lottie.loadAnimation({
-			container: lottieContainer1,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_1],
-		});
-
-		const animation_2 = lottie.loadAnimation({
-			container: lottieContainer2,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_2],
-		});
-
-        const animation_3 = lottie.loadAnimation({
-			container: lottieContainer3,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_3],
-		});
-
-        const animation_4 = lottie.loadAnimation({
-			container: lottieContainer4,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_4],
-		});
-
-        const animation_5 = lottie.loadAnimation({
-			container: lottieContainer5,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_5],
-		});
-
-        const animation_6 = lottie.loadAnimation({
-			container: lottieContainer6,
-			renderer: "svg",
-			loop: true,
-			autoplay: false,
-			path: animations[ani_6],
-		});
-
-        //Get current tempo of user
-        const tempoMap = new TempoMap(result);
-        const currentTempo = tempoMap.getTempoAtMeasure(1);
-
-        // Animation speed tied to tempo
-        //animation.setSpeed(currentTempo * 0.01)
-        animation_1.setSpeed(currentTempo * 0.01)
-        animation_2.setSpeed(currentTempo * 0.01)
-        animation_3.setSpeed(currentTempo * 0.01)
-        animation_4.setSpeed(currentTempo * 0.01)
-        animation_5.setSpeed(currentTempo * 0.01)
-        animation_6.setSpeed(currentTempo * 0.01)
-
-        // Track start/end by musical measure
-        const startMeasure = Math.max(1, start);
-        const endMeasure = Math.max(startMeasure, end);
-        let started = false;
-
-        // const finish = () => {
-        //     try { animation.stop(); } catch { }
-        //     try {
-        //         if (unsubscribe) unsubscribe();
-        //     } catch { }
-        //     try { dancerComponent.remove(); } catch { }
-        //     resolve();
-        // };
-		const finish = () => {
-			try { animation_1.stop(); animation_2.stop(); animation_3.stop(); animation_4.stop(); animation_5.stop(); animation_6.stop();} catch { }
-			try {
-				if (unsubscribe) unsubscribe();
-			} catch { }
-			try { dancerComponent1.remove(); } catch { }
-			try { dancerComponent2.remove(); } catch { }
-            try { dancerComponent3.remove(); } catch { }
-            try { dancerComponent4.remove(); } catch { }
-            try { dancerComponent5.remove(); } catch { }
-            try { dancerComponent6.remove(); } catch { }
-			resolve();
-		};
-
-        //Update dancer visibility based on DAW play state and measure position
-        const updateDancerVisibility = () => {
-            const isPlaying = store.getState().daw.playing;
-            const position = player.getPosition();
-
-            // Stop and cleanup at or after the end measure
-            if (position >= endMeasure) {
-                try { animation_1.stop(); animation_2.stop(); animation_3.stop(); animation_4.stop(); animation_5.stop(); animation_6.stop(); } catch {}
-                finish();
-                return;
-            }
-
-            // Before start measure, keep paused
-            if (!isPlaying || position < startMeasure) {
-                animation_1.pause();
-                animation_2.pause();
-                animation_3.pause();
-                animation_4.pause();
-                animation_5.pause();
-                animation_6.pause();
-                return;
-            }
-
-            // At or after start measure (but before end), ensure playing
-            if (!started && position >= startMeasure && position < endMeasure) {
-                animation_1.goToAndPlay(0, true);
-                animation_2.goToAndPlay(0, true);
-                animation_3.goToAndPlay(0, true);
-                animation_4.goToAndPlay(0, true);
-                animation_5.goToAndPlay(0, true);
-                animation_6.goToAndPlay(0, true);
-                started = true;
-            } else if (started) {
-                animation_1.play();
-                animation_2.play();
-                animation_3.play();
-                animation_4.play();
-                animation_5.play();
-                animation_6.play();
-            }
-        };
-
-        updateDancerVisibility();
-        const unsubscribe = store.subscribe(updateDancerVisibility);
-        
-        // Store unsubscribe function and Lottie instances for proper cleanup
-        (dancerComponent1 as any)._unsubscribe = unsubscribe;
-        (dancerComponent2 as any)._unsubscribe = unsubscribe;
-        (dancerComponent3 as any)._unsubscribe = unsubscribe;
-        (dancerComponent4 as any)._unsubscribe = unsubscribe;
-        (dancerComponent5 as any)._unsubscribe = unsubscribe;
-        (dancerComponent6 as any)._unsubscribe = unsubscribe;
-        (lottieContainer1 as any).lottieInstance = animation_1;
-        (lottieContainer2 as any).lottieInstance = animation_2;
-        (lottieContainer3 as any).lottieInstance = animation_3;
-        (lottieContainer4 as any).lottieInstance = animation_4;
-        (lottieContainer5 as any).lottieInstance = animation_5;
-        (lottieContainer6 as any).lottieInstance = animation_6;
-    });
-}
-
-export function fitDance(result: DAWData, ani_1: string, ani_2: string, ani_3: string, ani_4: string,ani_5: string, ani_6: string, start: number, end: number) {
-	//Type checkers
-	checkType("ani_1", "string", ani_1); 
-	checkType("ani_2", "string", ani_2); 
-    checkType("ani_3", "string", ani_3); 
-    checkType("ani_4", "string", ani_4); 
-    checkType("ani_5", "string", ani_5); 
-    checkType("ani_6", "string", ani_6); 
-	checkType("start", "number", start as any);
-	checkType("end", "number", end as any);
-
-	// Enqueue an animation task bound to start/end measures
-	enqueueDance({ result, ani_1, ani_2,ani_3,ani_4,ani_5,ani_6,start, end });
-	return result;
+export function fitDance(result: DAWData, fbxName: string, start: number, end: number) {
+	checkType("fbxName", "string", fbxName)
+	checkType("start", "number", start as any)
+	checkType("end", "number", end as any)
+	if (typeof start !== "number" || !Number.isInteger(start) || start < 1) {
+		throw new TypeError("start must be an integer measure >= 1")
+	}
+	if (typeof end !== "number" || !Number.isInteger(end) || end < start) {
+		throw new TypeError("end must be an integer measure >= start")
+	}
+	store.dispatch(addFbxDanceTask({ fbxName, start, end }))
+	return result
 }
 
 
 export function cleanupAllDancers() {
-    // Reset dance queue state
-    danceQueue = [];
-    isDanceQueueRunning = false;
-    dancerCounter = 0; // Reset counter to avoid ID conflicts
-    
-    const dancerDivs = document.querySelectorAll('[id^="dancer-container"]');
-    dancerDivs.forEach(div => {
-        // Unsubscribe if needed
-        const unsubscribeFn = (div as any)._unsubscribe;
-        if (typeof unsubscribeFn === 'function') {
-            try {
-                unsubscribeFn();
-            } catch (e) {
-                console.error('Error unsubscribing from store:', e);
-            }
-        }
-        
-        // Destroy Lottie instances if present
-        const lottieContainers = div.querySelectorAll('[id^="dancer-lottie"]');
-        lottieContainers.forEach(container => {
-            const lottieInstance = (container as any).lottieInstance;
-            if (lottieInstance && typeof lottieInstance.destroy === 'function') {
-                try {
-                    lottieInstance.destroy();
-                } catch (e) {
-                    console.warn('Error destroying lottie instance:', e);
-                }
-            }
-        });
-        
-        div.remove();
-    });
+	store.dispatch(clearFbxDanceTasks())
 }
-
-
-// function cleanupDancer() {
-//     const existingContainer = document.getElementById(`dancer-lottie`)
-//     if (existingContainer) {
-//         // Prefer direct property unsubscribe if present
-//         const unsubscribeFn = (existingContainer as any)._unsubscribe
-//         if (typeof unsubscribeFn === 'function') {
-//             try { unsubscribeFn() } catch (e) { console.error('Error unsubscribing from store:', e) }
-//         } else {
-//             // Backward compatibility: dataset stringified function
-//             const unsubscribeStr = existingContainer.dataset.unsubscribe
-//             if (unsubscribeStr) {
-//                 try {
-//                     const unsubscribe = new Function('return ' + unsubscribeStr)()
-//                     unsubscribe()
-//                 } catch (e) {
-//                     console.error('Error unsubscribing from store:', e)
-//                 }
-//             }
-//         }
-        
-//         // Stop lottie animation if present
-//         const lottieContainer = existingContainer.querySelector('#dancer-lottie') as HTMLElement
-//         if (lottieContainer && (lottieContainer as any).lottieInstance) {
-//             try {
-//                 const lottieInstance = (lottieContainer as any).lottieInstance
-//                 if (lottieInstance && typeof lottieInstance.destroy === 'function') {
-//                     lottieInstance.destroy()
-//                 }
-//             } catch (e) {
-//                 console.warn('Error destroying lottie instance:', e)
-//             }
-//         }
-        
-//         existingContainer.remove()
-//     }
-// }
-
-
 
 const checkArgCount = (funcName: string, args: any[], required: number, total: number) => {
     const given = args.length

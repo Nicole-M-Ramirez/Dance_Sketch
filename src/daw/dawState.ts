@@ -74,6 +74,8 @@ interface DAWState {
         reset: boolean,
     }
     autoScroll: boolean
+    fbxDanceTasks: { id: number; fbxName: string; start: number; end: number }[]
+    nextFbxDanceId: number
 }
 
 const dawSlice = createSlice({
@@ -99,6 +101,8 @@ const dawSlice = createSlice({
             reset: false,
         },
         autoScroll: true,
+        fbxDanceTasks: [],
+        nextFbxDanceId: 1,
     } as DAWState,
     reducers: {
         setTracks(state, { payload }) {
@@ -146,6 +150,16 @@ const dawSlice = createSlice({
         setAutoScroll(state, { payload }) {
             state.autoScroll = payload
         },
+        addFbxDanceTask(state, { payload }: { payload: { fbxName: string; start: number; end: number } }) {
+            const id = state.nextFbxDanceId++
+            state.fbxDanceTasks.push({ id, ...payload })
+        },
+        removeFbxDanceTask(state, { payload }: { payload: number }) {
+            state.fbxDanceTasks = state.fbxDanceTasks.filter((t) => t.id !== payload)
+        },
+        clearFbxDanceTasks(state) {
+            state.fbxDanceTasks = []
+        },
     },
 })
 
@@ -166,6 +180,9 @@ export const {
     setBypass,
     setLoop,
     setAutoScroll,
+    addFbxDanceTask,
+    removeFbxDanceTask,
+    clearFbxDanceTasks,
 } = dawSlice.actions
 
 export const selectTracks = (state: RootState) => state.daw.tracks
@@ -183,6 +200,7 @@ export const selectSoloMute = (state: RootState) => state.daw.soloMute
 export const selectBypass = (state: RootState) => state.daw.bypass
 export const selectLoop = (state: RootState) => state.daw.loop
 export const selectAutoScroll = (state: RootState) => state.daw.autoScroll
+export const selectFbxDanceTasks = (state: RootState) => state.daw.fbxDanceTasks
 
 export const selectMixTrackHeight = createSelector(
     [selectTrackHeight],
