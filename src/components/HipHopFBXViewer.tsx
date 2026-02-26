@@ -6,15 +6,11 @@ import * as daw from "../daw/dawState"
 import * as player from "../audio/player"
 
 const FBX_BASE = "/MixamoAnimations"
+const AVATAR_FBX_NAME = "Avatar.fbx"
 
 function fbxUrl(name: string): string {
     const base = name.endsWith(".fbx") ? name : `${name}.fbx`
     return `${FBX_BASE}/${base}`
-}
-
-type CachedModel = {
-    model: THREE.Object3D
-    clip: THREE.AnimationClip | null
 }
 
 const HipHopFBXViewer: React.FC = () => {
@@ -28,10 +24,13 @@ const HipHopFBXViewer: React.FC = () => {
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const clockRef = useRef(new THREE.Clock())
+
+    const avatarRef = useRef<THREE.Object3D | null>(null)
+    const [avatarReady, setAvatarReady] = useState(false)
+
     const mixerRef = useRef<THREE.AnimationMixer | null>(null)
     const currentActionRef = useRef<THREE.AnimationAction | null>(null)
-    const currentModelRef = useRef<THREE.Object3D | null>(null)
-    const cacheRef = useRef<Record<string, CachedModel>>({})
+    const clipCacheRef = useRef<Record<string, THREE.AnimationClip | null>>({})
     const animFrameRef = useRef<number>(0)
 
     // Poll play position when playing so we know when we're inside [start, end]
@@ -83,6 +82,33 @@ const HipHopFBXViewer: React.FC = () => {
         dir.position.set(2, 5, 3)
         scene.add(dir)
 
+        const avatarLoader = new FBXLoader()
+        avatarLoader.load(
+            fbxUrl(AVATAR_FBX_NAME),
+            (fbx) => {
+                fbx.traverse((child) => {
+                    if (child instanceof THREE.Mesh) {
+                        child.castShadow = true
+                        child.receiveShadow = true
+                    }
+                })
+                const scale = 0.01
+                fbx.scale.setScalar(scale)
+                fbx.position.set(0, 0, 0)
+
+                scene.add(fbx)
+                avatarRef.current = fbx
+
+                const mixer = new THREE.AnimationMixer(fbx)
+                mixerRef.current = mixer
+                setAvatarReady(true)
+            },
+            undefined,
+            (err) => {
+                console.error("FBX avatar load error:", err)
+            }
+        )
+
         const animate = () => {
             animFrameRef.current = requestAnimationFrame(animate)
             const delta = clockRef.current.getDelta()
@@ -103,12 +129,12 @@ const HipHopFBXViewer: React.FC = () => {
             cameraRef.current = null
             mixerRef.current = null
             currentActionRef.current = null
-            currentModelRef.current = null
-            cacheRef.current = {}
+            avatarRef.current = null
+            clipCacheRef.current = {}
         }
     }, [])
 
-    // Switch model / animation when the active task changes
+    // Switch animation when the active task changes
     useEffect(() => {
         if (!shouldShow || !fbxName) {
             // If we're not in an active window, stop animation but keep the last pose visible
@@ -119,69 +145,63 @@ const HipHopFBXViewer: React.FC = () => {
             return
         }
 
-        const scene = sceneRef.current
-        if (!scene) return
-
-        const cached = cacheRef.current[fbxName]
-
-        const playModel = (entry: CachedModel) => {
-            // Remove previous model from scene
-            if (currentModelRef.current) {
-                scene.remove(currentModelRef.current)
-            }
-
-            scene.add(entry.model)
-            currentModelRef.current = entry.model
-
-            if (entry.clip) {
-                const mixer = new THREE.AnimationMixer(entry.model)
-                mixerRef.current = mixer
-                const action = mixer.clipAction(entry.clip)
-                action.reset().setLoop(THREE.LoopRepeat, Infinity).play()
-                currentActionRef.current = action
-            } else {
-                mixerRef.current = null
-                currentActionRef.current = null
-            }
-        }
-
-        if (cached) {
-            // Already loaded – switch instantly, no cooldown
-            playModel(cached)
+        if (!avatarReady || !avatarRef.current || !mixerRef.current) {
             return
         }
 
-        // Not cached yet – load but keep the previous model visible until we finish
+        const mixer = mixerRef.current
+
+        const applyClip = (clip: THREE.AnimationClip | null) => {
+            if (!clip || !mixer) {
+                return
+            }
+
+            const previousAction = currentActionRef.current
+            const nextAction = mixer.clipAction(clip)
+
+            nextAction.reset().setLoop(THREE.LoopRepeat, Infinity).play()
+
+            if (previousAction && previousAction !== nextAction) {
+                previousAction.crossFadeTo(nextAction, 0.3, false)
+            }
+
+            currentActionRef.current = nextAction
+        }
+
+        const cachedClip = clipCacheRef.current[fbxName]
+        if (cachedClip !== undefined) {
+            applyClip(cachedClip)
+            return
+        }
+
         const loader = new FBXLoader()
         const url = fbxUrl(fbxName)
+        let cancelled = false
+
         loader.load(
             url,
             (fbx) => {
-                fbx.traverse((child) => {
-                    if (child instanceof THREE.Mesh) {
-                        child.castShadow = true
-                        child.receiveShadow = true
-                    }
-                })
-                const scale = 0.01
-                fbx.scale.setScalar(scale)
-                fbx.position.set(0, 0, 0)
+                if (cancelled) {
+                    return
+                }
 
                 const clip = fbx.animations && fbx.animations.length > 0 ? fbx.animations[0] : null
-                const entry: CachedModel = { model: fbx, clip }
-                cacheRef.current[fbxName] = entry
+                clipCacheRef.current[fbxName] = clip
 
-                // Only switch if this is still the active animation
                 if (shouldShow && activeTask?.fbxName === fbxName) {
-                    playModel(entry)
+                    applyClip(clip)
                 }
             },
             undefined,
             (err) => {
-                console.error("FBX load error:", err)
+                console.error("FBX animation load error:", err)
             }
         )
-    }, [shouldShow, fbxName, activeTask])
+
+        return () => {
+            cancelled = true
+        }
+    }, [shouldShow, fbxName, activeTask, avatarReady])
 
     if (!shouldShow) {
         // Keep the last frame of the previous animation visible
