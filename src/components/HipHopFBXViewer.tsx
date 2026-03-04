@@ -17,6 +17,7 @@ const HipHopFBXViewer: React.FC = () => {
     const dispatch = useDispatch()
     const tasks = useSelector(daw.selectFbxDanceTasks)
     const playing = useSelector(daw.selectPlaying)
+    const tempoMap = useSelector(daw.selectTempoMap)
     const [position, setPosition] = useState(0)
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -61,11 +62,11 @@ const HipHopFBXViewer: React.FC = () => {
         if (!container) return
 
         const scene = new THREE.Scene()
-        scene.background = new THREE.Color(0x1a1a2e)
+        scene.background = new THREE.Color(0xB8E8F5)
         sceneRef.current = scene
 
         const camera = new THREE.PerspectiveCamera(45, 1, 0.1, 1000)
-        camera.position.set(0, 1.2, 2.5)
+        camera.position.set(0, 1.2, 2.8)
         camera.lookAt(0, 1, 0)
         cameraRef.current = camera
 
@@ -76,7 +77,7 @@ const HipHopFBXViewer: React.FC = () => {
         container.appendChild(renderer.domElement)
         rendererRef.current = renderer
 
-        const ambient = new THREE.AmbientLight(0xffffff, 0.6)
+        const ambient = new THREE.AmbientLight(0xffffff, 4)
         scene.add(ambient)
         const dir = new THREE.DirectionalLight(0xffffff, 0.8)
         dir.position.set(2, 5, 3)
@@ -158,6 +159,15 @@ const HipHopFBXViewer: React.FC = () => {
 
             const previousAction = currentActionRef.current
             const nextAction = mixer.clipAction(clip)
+
+            // Match animation speed to the song tempo by adjusting the mixer time scale.
+            try {
+                const currentTempo = tempoMap.getTempoAtTime(position)
+                const speed = currentTempo / 120
+                mixer.timeScale = speed
+            } catch (e) {
+                mixer.timeScale = 1
+            }
 
             nextAction.reset().setLoop(THREE.LoopRepeat, Infinity).play()
 
