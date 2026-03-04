@@ -51,6 +51,7 @@ export const API_FUNCTIONS = {
     importImage: { async: true, mod: false, return: true },
     importFile: { async: true, mod: false, return: true },
     selectRandomFile: { async: true, mod: false, return: true },
+    setAvatar: { async: false, mod: false, return: true },
 }
 
 export const EFFECT_NAMES_DISPLAY = [
@@ -187,6 +188,11 @@ const rawDoc: { [key: string]: Item[] } = {
             fbxName: "string",
             start: "integer",
             end: "integer",
+        },
+    }],
+    setAvatar: [{
+        parameters: {
+            fbxName: "string",
         },
     }],
     insertDanceMove: [{

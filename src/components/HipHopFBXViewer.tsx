@@ -5,9 +5,9 @@ import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
 import * as daw from "../daw/dawState"
 import * as player from "../audio/player"
 
+
 const FBX_BASE = "/MixamoAnimations"
 const AVATAR_FBX_NAME = "Avatar.fbx"
-
 function fbxUrl(name: string): string {
     const base = name.endsWith(".fbx") ? name : `${name}.fbx`
     return `${FBX_BASE}/${base}`
@@ -17,7 +17,8 @@ const HipHopFBXViewer: React.FC = () => {
     const dispatch = useDispatch()
     const tasks = useSelector(daw.selectFbxDanceTasks)
     const playing = useSelector(daw.selectPlaying)
-    const tempoMap = useSelector(daw.selectTempoMap)
+    const avatar = useSelector(daw.selectAvatar)
+    const avatarFbxName = avatar?.fbxName || AVATAR_FBX_NAME
     const [position, setPosition] = useState(0)
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -33,6 +34,25 @@ const HipHopFBXViewer: React.FC = () => {
     const currentActionRef = useRef<THREE.AnimationAction | null>(null)
     const clipCacheRef = useRef<Record<string, THREE.AnimationClip | null>>({})
     const animFrameRef = useRef<number>(0)
+
+    const tempoMap = useSelector(daw.selectTempoMap)
+    const currentTempo = React.useMemo(
+        () => tempoMap.getTempoAtTime(position),
+        [tempoMap, position]
+    )
+    const speed = currentTempo / 120
+
+    useEffect(() => {
+        if (!mixerRef.current) {
+            return
+        }
+    
+        const baseTempo = tempoMap.points[0]?.tempo ?? 120 // reference BPM
+        const tempo = currentTempo || baseTempo
+    
+        // Match animation speed to current song tempo
+        mixerRef.current.timeScale = tempo / baseTempo
+    }, [currentTempo, tempoMap])
 
     // Poll play position when playing so we know when we're inside [start, end]
     useEffect(() => {
@@ -56,10 +76,12 @@ const HipHopFBXViewer: React.FC = () => {
     const shouldShow = !!activeTask && playing
     const fbxName = activeTask?.fbxName
 
-    // One‑time Three.js setup and render loop
+    // Three.js setup and render loop, re-run when avatar changes
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
+
+        setAvatarReady(false)
 
         const scene = new THREE.Scene()
         scene.background = new THREE.Color(0xB8E8F5)
@@ -85,7 +107,7 @@ const HipHopFBXViewer: React.FC = () => {
 
         const avatarLoader = new FBXLoader()
         avatarLoader.load(
-            fbxUrl(AVATAR_FBX_NAME),
+            fbxUrl(avatarFbxName),
             (fbx) => {
                 fbx.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
@@ -103,6 +125,9 @@ const HipHopFBXViewer: React.FC = () => {
                 const mixer = new THREE.AnimationMixer(fbx)
                 mixerRef.current = mixer
                 setAvatarReady(true)
+
+                
+                // mixer.timeScale = speed
             },
             undefined,
             (err) => {
@@ -133,7 +158,7 @@ const HipHopFBXViewer: React.FC = () => {
             avatarRef.current = null
             clipCacheRef.current = {}
         }
-    }, [])
+    }, [avatarFbxName])
 
     // Switch animation when the active task changes
     useEffect(() => {
@@ -159,15 +184,6 @@ const HipHopFBXViewer: React.FC = () => {
 
             const previousAction = currentActionRef.current
             const nextAction = mixer.clipAction(clip)
-
-            // Match animation speed to the song tempo by adjusting the mixer time scale.
-            try {
-                const currentTempo = tempoMap.getTempoAtTime(position)
-                const speed = currentTempo / 120
-                mixer.timeScale = speed
-            } catch (e) {
-                mixer.timeScale = 1
-            }
 
             nextAction.reset().setLoop(THREE.LoopRepeat, Infinity).play()
 

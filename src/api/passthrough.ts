@@ -24,7 +24,7 @@ import store from "../reducers"
 import * as request from "../request"
 import * as player from "../audio/player"
 import { animations } from "../data/Animations"
-import { setPlaying, addFbxDanceTask, clearFbxDanceTasks } from "../daw/dawState"
+import { setPlaying, addFbxDanceTask, clearFbxDanceTasks, SetAvatar} from "../daw/dawState"
 import { start } from "@popperjs/core"
 
 
@@ -949,6 +949,12 @@ export function fitDance(result: DAWData, fbxName: string, start: number, end: n
 	}
 	store.dispatch(addFbxDanceTask({ fbxName, start, end }))
 	return result
+}
+
+export function setAvatar(result: DAWData, fbxName: string) {
+    checkType("fbxName", "string", fbxName)
+    store.dispatch(SetAvatar(fbxName))
+    return result
 }
 
 
