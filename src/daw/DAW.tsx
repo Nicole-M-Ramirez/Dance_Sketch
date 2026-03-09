@@ -48,6 +48,8 @@ const Header = ({ playPosition, setPlayPosition }: { playPosition: number, setPl
     const needCompile = embedMode && !embedCompiled
     const { t } = useTranslation()
 
+
+
     const playbackStartedCallback = () => {
         dispatch(daw.setPlaying(true))
         dispatch(daw.setPendingPosition(null))
@@ -1317,6 +1319,9 @@ export const DAW = () => {
         }
     }, [playing, xScale, autoScroll])
 
+    const fbxDanceTasks = useSelector(daw.selectFbxDanceTasks)
+    const hasFitDance = fbxDanceTasks.length > 0
+
     return <div className={`flex flex-col w-full h-full relative overflow-hidden ${theme === "light" ? "theme-light" : "dark"}`}>
         {hideEditor &&
         <div style={{ display: "block" }} className="embedded-script-info"> Script {embeddedScriptName} by {embeddedScriptUsername}</div>}
@@ -1324,7 +1329,7 @@ export const DAW = () => {
         {/* <CatDanceAnimation />
         <DancingStickFigure /> */}
         <PlaybackIndicator />
-        <HipHopFBXViewer />
+        {hasFitDance && <HipHopFBXViewer />}
 
         {!hideDAW &&
         <div id="zoom-container" className="grow relative w-full h-full flex flex-col overflow-x-auto overflow-y-hidden z-0">

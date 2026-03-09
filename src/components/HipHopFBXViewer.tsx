@@ -40,7 +40,6 @@ const HipHopFBXViewer: React.FC = () => {
         () => tempoMap.getTempoAtTime(position),
         [tempoMap, position]
     )
-    const speed = currentTempo / 120
 
     useEffect(() => {
         if (!mixerRef.current) {
