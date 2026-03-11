@@ -710,22 +710,35 @@
       }
     },
 
-    "Setup_Dancer": {
-      "description": "Sets up the dancer with the specified parameters.",
-      "parameters": {
-        "move": {
-          "description": "Choose the dance move the dancer will perform."
+    "fitDance":{
+      "description": "Add a dance step to the choreography at specific start and end points. The dance step will be repeated or shortened as needed to complete the specified time.",
+      "parameters":{
+        "move":{
+          "description": "Dance moved to place on choreography. Typically this is a constant from the dance move browser"
         },
-        "start": {
-          "description":"Frame where the animation will start."
+        "start":{
+          "description": "Location within the choreography where the sound will begin (e.g. 1 will start at the beginning of measure 1)."
         },
         "end": {
-          "description": "Frame where the animation will end."
+          "description": "Location within the choreography where the sound will end (e.g. 5 will stop the sound at the beginning of measure 5)."
         }
       },
       "example": {
-        "python": "# Add a dancer to the music as nesesarry\n# Here the dancer start in the middle and ends in the end of the animation 9\nSetup_Dancer('Jump', 50, 100)",
-        "javascript": "// Add a dancer to the music as nesesarry\n// Here the dancer start in the middle and ends in the end of the animation 9\nSetup_Dancer('Jump', 50, 100);"
+        "python": "# Add a move to a choreography, repeating or trimming as necessary\n# Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1', 2, 9)",
+        "javascript": "// Add a sound to a choreography, repeating or trimming as necessary\n// Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1', 2, 9);"
+      }
+    },
+
+    "setAvatar":{
+      "description": "Select an avatart to perform the choreography. Can choose between 'Mitchell' and 'Ninja'. If the function if not used, 'Mitchell' is the default avatar.",
+      "parameters":{
+        "Name":{
+          "description": "Name of the avatar that will perform the choreography"
+        }
+      },
+      "example": {
+        "python": "# Select avatar to perform the choreography\nsetAvatar('Ninja')",
+        "javascript": "// Select avatar to perform the choreography\nsetAvatar('Ninja');"
       }
     },
 
@@ -1219,6 +1232,31 @@
       "ReferenceError": "There is an error with a variable or function name that is not defined",
       "NetworkError": "Please try running the code again. If the issue persists, check your internet connection or contact network administrator.",
       "ServerError": "Please try running the code again. If the issue persists, please report the issue using 'Report Error' in the information menu."
+    }
+  },
+  "dance":{
+    "moves":{
+      "HipHop1": {
+        "description" : "Perform HipHop1"
+      },
+      "HipHop2":  {
+        "description" : "Perform HipHop2"
+      },
+      "HipHop3":  {
+        "description" : "Perform HipHop3"
+      },
+      "HipHop4":  {
+        "description" : "Perform HipHop4"
+      },
+      "HipHop5":  {
+        "description" : "Perform HipHop5"
+      },
+      "HipHop6":  {
+        "description" : "Perform HipHop6"
+      },
+      "HipHop7":  {
+        "description" : "Perform HipHop7"
+      }
     }
   }
 }

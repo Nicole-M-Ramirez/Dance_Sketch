@@ -9,6 +9,7 @@ import * as caiThunks from "../cai/caiThunks"
 import { SoundBrowser } from "./Sounds"
 import { ScriptBrowser } from "./Scripts"
 import { APIBrowser } from "./API"
+import {DANCEBrowser} from "./DANCE"
 import type { RootState } from "../reducers"
 import { Collapsed } from "./Utils"
 import { BrowserTabType } from "./BrowserTab"
@@ -109,6 +110,10 @@ export const BrowserTabs = () => {
             <BrowserTab name="API" type={BrowserTabType.API}>
                 <i className="icon-book pr-2" />
             </BrowserTab>
+
+            <BrowserTab name="DANCE MOVES" type={BrowserTabType.DANCE}>
+                <i className="icon-music pr-2" />
+            </BrowserTab>
         </div>
     )
 }
@@ -122,6 +127,7 @@ const BrowserComponents: { [key in BrowserTabType]: React.FC } = {
     [BrowserTabType.Sound]: SoundBrowser,
     [BrowserTabType.Script]: ScriptBrowser,
     [BrowserTabType.API]: APIBrowser,
+    [BrowserTabType.DANCE]: DANCEBrowser,
 }
 
 export const Browser = () => {

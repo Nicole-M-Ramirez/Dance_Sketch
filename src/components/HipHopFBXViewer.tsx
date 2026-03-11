@@ -1,9 +1,11 @@
-import React, { useEffect, useRef, useState } from "react"
+import React, { useEffect, useRef, useState,  } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import * as THREE from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
 import * as daw from "../daw/dawState"
 import * as player from "../audio/player"
+import {useScreenSize} from "../components/useScreenSize"
+
 
 
 const FBX_BASE = "/MixamoAnimations"
@@ -34,12 +36,14 @@ const HipHopFBXViewer: React.FC = () => {
     const currentActionRef = useRef<THREE.AnimationAction | null>(null)
     const clipCacheRef = useRef<Record<string, THREE.AnimationClip | null>>({})
     const animFrameRef = useRef<number>(0)
+    const { width, height } = useScreenSize();
 
     const tempoMap = useSelector(daw.selectTempoMap)
     const currentTempo = React.useMemo(
         () => tempoMap.getTempoAtTime(position),
         [tempoMap, position]
     )
+
 
     useEffect(() => {
         if (!mixerRef.current) {
@@ -228,13 +232,34 @@ const HipHopFBXViewer: React.FC = () => {
         }
     }, [shouldShow, fbxName, activeTask, avatarReady])
 
+    
+        const [size, setSize] = useState({
+          width: window.innerWidth,
+          height: window.innerHeight
+        });
+      
+        useEffect(() => {
+          const handleResize = () => {
+            setSize({
+              width: window.innerWidth,
+              height: window.innerHeight
+            });
+          };
+      
+          window.addEventListener("resize", handleResize);
+      
+          return () => window.removeEventListener("resize", handleResize);
+        }, []);
+
+        console.log(size.height)
+      
     if (!shouldShow) {
         // Keep the last frame of the previous animation visible
         return (
             <div
                 ref={containerRef}
                 className="fixed bottom-4 left-4 z-50 rounded-lg overflow-hidden shadow-lg border border-gray-700"
-                style={{ width: 320, height: 420, left: "80%", bottom: "25%" }}
+                style={{ width: 320, height: 420, left:(width)*0.8, bottom: "25%"}}
                 aria-label="Dance animation (idle)"
             />
         )
@@ -244,7 +269,7 @@ const HipHopFBXViewer: React.FC = () => {
         <div
             ref={containerRef}
             className="fixed bottom-4 left-4 z-50 rounded-lg overflow-hidden shadow-lg border border-gray-700"
-            style={{ width: 320, height: 420, left: "80%", bottom: "25%" }}
+            style={{ width: 320, height: 420, left: (width)*0.8, bottom: "25%" }}
             aria-label={`Dance animation: ${fbxName}`}
         />
     )
