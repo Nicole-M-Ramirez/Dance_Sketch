@@ -217,7 +217,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
     return (
         <div
         ref={containerRef}
-        className="fixed bottom-4 left-4 z-50 rounded-lg overflow-hidden shadow-lg border border-gray-700"
+        className="mt-3 rounded-lg overflow-hidden shadow-lg border border-gray-700"
         style={{ width: 200, height: 300}}
         aria-label="Dance animation (idle)"
     />
@@ -262,20 +262,20 @@ const Entry = ({ name, obj }: { name: string, obj: DANCEItem & { details?: boole
             {obj.details && (
                 <>
                     <Details obj={obj} />
-                    <AnimationPreview name={name} />
+                    <AnimationPreview name={name} /> 
                 </>)}
         </div>
     )
 }
 
-const Details = ({ obj }: { obj: DANCEItem }) => {
+const Details = ({ obj}: { obj: DANCEItem}) => {
     const language = useSelector(selectScriptLanguage)
     const { t } = useTranslation()
 
     return (
-        <div className="border-t border-gray-500 mt-2 pt-1 text-sm">
-            <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} />
-        </div>
+            <div className="border-t border-gray-500 mt-2 pt-1 text-sm">
+                <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} />
+            </div>
     )
 }
 
