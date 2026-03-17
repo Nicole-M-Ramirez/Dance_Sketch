@@ -24,8 +24,7 @@ export const API_FUNCTIONS = {
     One: { async: false, mod: true, return: false }, // Function to display triangle.png
     //Setup_Dancer: { async: false, mod: true, return: false }, // Function to display triangle.png
     fitDance: { async: false, mod: true, return: false },
-    beat:{ async: false, mod: true, return: false}, //funcion que aga print 1 cada 3 beats
-    NumPrint: { async: false, mod: false, return: true },
+    //beat:{ async: false, mod: true, return: false}, //funcion que aga print 1 cada 3 beats
     // Return value, don't modify DAW data.
     gauss: { async: false, mod: false, return: true },
     println: { async: false, mod: false, return: true },
@@ -111,13 +110,13 @@ const rawDoc: { [key: string]: Item[] } = {
         },
         returns: "float",
     }],
-    beat: [{
-        parameters: {
-            number: "integer",
-            //move: "string",
-        },
-        returns: "integer",
-    }],
+    // beat: [{
+    //     parameters: {
+    //         number: "integer",
+    //         //move: "string",
+    //     },
+    //     returns: "integer",
+    // }],
     analyzeForTime: [{
         parameters: {
             sound: "soundConstant",
@@ -392,12 +391,12 @@ const rawDoc: { [key: string]: Item[] } = {
         },
         returns: "string",
     }],
-    NumPrint: [{
-        parameters: {
-            number: "integer",
-        },
-        returns: "integer",
-    }],
+    // NumPrint: [{
+    //     parameters: {
+    //         number: "integer",
+    //     },
+    //     returns: "integer",
+    // }],
 }
 
 function getSignature(name: string, parameters: { [name: string]: { default?: string } }) {

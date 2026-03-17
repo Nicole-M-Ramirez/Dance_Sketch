@@ -18,7 +18,6 @@ const blockModeOptions = {
         println: { color: "purple" },
         selectRandomFile: { color: "purple" },
         insertMedia: { color: "purple", dropdown: [null, blockDropdownNumbers] },
-        NumPrint: { color: "purple" },
         analyze: { color: "green" },
         analyzeForTime: { color: "green" },
         analyzeTrack: { color: "green", dropdown: [blockDropdownNumbers] },
@@ -60,7 +59,7 @@ function getJavascriptBlocks(names: string[]) {
     return getSignatures(names).map(signature => ({ block: signature + ";" }))
 }
 
-const basicFunctions = ["init", "finish", "print", "println", "setTempo", "fitMedia", "makeBeat", "setEffect", "selectRandomFile", "insertMedia", "NumPrint"]
+const basicFunctions = ["init", "finish", "print", "println", "setTempo", "fitMedia", "makeBeat", "setEffect", "selectRandomFile", "insertMedia"]
 const advancedFunctions = Object.keys(API_DOC).filter(f => !basicFunctions.includes(f)).sort()
 
 const pythonMode = {

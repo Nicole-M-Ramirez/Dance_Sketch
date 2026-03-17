@@ -910,30 +910,15 @@ export function shuffleString(result: DAWData, string: string) {
 //     return 0
 // }
 
-export function beat(result: DAWData, number: number) {
-    const args = [...arguments].slice(1)
-    esconsole("Calling beat with parameters" + args.join(", "), ["debug", "PT"])
+// export function beat(result: DAWData, number: number) {
+//     const args = [...arguments].slice(1)
+//     esconsole("Calling beat with parameters" + args.join(", "), ["debug", "PT"])
 
-    checkArgCount("beat", args, 1, 1)
-    checkType("number", "number", number)
-    checkRange("number", number, { min: 1 })
+//     checkArgCount("beat", args, 1, 1)
+//     checkType("number", "number", number)
+//     checkRange("number", number, { min: 1 })
 
-    return result
-}
-
-// Print a number and return it
-// export function NumPrint(result: DAWData, number: number) {
-//     const tempoMap = new TempoMap(result)
-
-//     //const tempo = tempoMap.getTempoAtMeasure(measure)
-//      //println(result, tempoMap)
-//     // const args = [...arguments].slice(1)
-//     // esconsole("Calling NumPrint with parameters" + args.join(", "), ["debug", "PT"])
-
-//     // checkArgCount("NumPrint", args, 1, 1)
-//     // checkType("number", "number", number)
-    
-//     return number
+//     return result
 // }
 
 
