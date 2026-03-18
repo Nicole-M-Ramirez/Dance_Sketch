@@ -184,7 +184,8 @@ const rawDoc: { [key: string]: Item[] } = {
     // }],
     fitDance: [{
         parameters: {
-            fbxName: "string",
+            upperMove: "string",
+            lowerMove: "string",
             start: "integer",
             end: "integer",
         },

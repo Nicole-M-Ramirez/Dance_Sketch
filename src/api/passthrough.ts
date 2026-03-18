@@ -922,8 +922,10 @@ export function shuffleString(result: DAWData, string: string) {
 // }
 
 
-export function fitDance(result: DAWData, fbxName: string, start: number, end: number) {
-	checkType("fbxName", "string", fbxName)
+//export function fitDance(result: DAWData, fbxName: string, start: number, end: number) {
+export function fitDance(result: DAWData, upperMove: string, lowerMove: string, start: number, end: number) {
+	checkType("upperMove", "string", upperMove)
+    checkType("lowerMove", "string", lowerMove)
 	checkType("start", "number", start as any)
 	checkType("end", "number", end as any)
 	if (typeof start !== "number" || !Number.isInteger(start) || start < 1) {
@@ -932,7 +934,7 @@ export function fitDance(result: DAWData, fbxName: string, start: number, end: n
 	if (typeof end !== "number" || !Number.isInteger(end) || end < start) {
 		throw new TypeError("end must be an integer measure >= start")
 	}
-	store.dispatch(addFbxDanceTask({ fbxName, start, end }))
+	store.dispatch(addFbxDanceTask({upperMove, lowerMove, start, end }))
 	return result
 }
 

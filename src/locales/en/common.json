@@ -724,8 +724,8 @@
         }
       },
       "example": {
-        "python": "# Add a move to a choreography, repeating or trimming as necessary\n# Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1', 2, 9)",
-        "javascript": "// Add a sound to a choreography, repeating or trimming as necessary\n// Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1', 2, 9);"
+        "python": "# Add a move to a choreography, repeating or trimming as necessary\n# Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1','HipHop2', 2, 9)",
+        "javascript": "// Add a sound to a choreography, repeating or trimming as necessary\n// Here it repeats from measure 2 to the start of measure 9\nfitDance('HipHop1','HipHop2', 2, 9);"
       }
     },
 

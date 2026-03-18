@@ -74,7 +74,7 @@ interface DAWState {
         reset: boolean,
     }
     autoScroll: boolean
-    fbxDanceTasks: { id: number; fbxName: string; start: number; end: number }[]
+    fbxDanceTasks: { id: number; upperMove: string; lowerMove: string; start: number; end: number }[]
     nextFbxDanceId: number
 
     avatar: { fbxName: string }
@@ -154,7 +154,7 @@ const dawSlice = createSlice({
         setAutoScroll(state, { payload }) {
             state.autoScroll = payload
         },
-        addFbxDanceTask(state, { payload }: { payload: { fbxName: string; start: number; end: number } }) {
+        addFbxDanceTask(state, { payload }: { payload: { upperMove: string; lowerMove: string; start: number; end: number } }) {
             const id = state.nextFbxDanceId++
             state.fbxDanceTasks.push({ id, ...payload })
         },
