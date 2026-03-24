@@ -4,7 +4,7 @@ import { useSelector, useDispatch } from "react-redux"
 import { useTranslation } from "react-i18next"
 
 import { BrowserTabType } from "./BrowserTab"
-import * as dance from "./danceState"
+import * as avatar from "./avatarState"
 //import type { APIItem, APIParameter } from "../api/api"
 import { selectScriptLanguage } from "../app/appState"
 
@@ -20,16 +20,16 @@ import * as THREE from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
 import * as daw from "../daw/dawState"
 
-interface DANCEParameter {
+interface AVATARParameter {
     typeKey: string
     descriptionKey: string
     default?: string
 }
 
-import type { DanceMove } from "../dance/danceDoc"
-import { getDanceMoveConstantNameForDisplayName } from "../dance/danceConstants"
+import type { Avatars } from "../dance/avatarDoc"
+import { getAvatarConstantNameForDisplayName } from "../dance/avatarConstants"
 
-type DANCEItem = DanceMove
+type AVATARItem = Avatars
 
 const Code = ({ source, language }: { source: string, language: Language }) => {
     const { light, dark } = highlight(source, language)
@@ -50,13 +50,13 @@ function useForceUpdate() {
     return () => setValue(value => ++value) // update the state to force render
 }
 
-const paste = (name: string, obj: DANCEItem) => {
+const paste = (name: string, obj: AVATARItem) => {
     // const args: string[] = []
     // for (const param in obj.parameters) {
     //     args.push(param)
     // }
 
-    const constantName = getDanceMoveConstantNameForDisplayName(name)
+    const constantName = getAvatarConstantNameForDisplayName(name)
     editor.pasteCode(constantName ?? `"${name}"`)
 }
 
@@ -227,14 +227,14 @@ const AnimationPreview = ({ name }: { name: string }) => {
 }
 
 // Main point of this module.
-const Entry = ({ name, obj }: { name: string, obj: DANCEItem & { details?: boolean } }) => {
+const Entry = ({ name, obj }: { name: string, obj: AVATARItem & { details?: boolean } }) => {
     // TODO don't mutate obj.details
     const { t } = useTranslation()
     const forceUpdate = useForceUpdate()
     const tabsOpen = !!useSelector(tabs.selectOpenTabs).length
     const language = useSelector(selectScriptLanguage)
 
-    const returnText = t(obj.descriptionKey)
+    const returnText = obj.descriptionKey ? t(obj.descriptionKey) : name
     return (
         <div className="p-3 border-b border-r border-black border-gray-500 dark:border-gray-700">
             <div className="flex justify-between mb-2">
@@ -270,13 +270,13 @@ const Entry = ({ name, obj }: { name: string, obj: DANCEItem & { details?: boole
     )
 }
 
-const Details = ({ obj}: { obj: DANCEItem}) => {
+const Details = ({ obj}: { obj: AVATARItem}) => {
     const language = useSelector(selectScriptLanguage)
     const { t } = useTranslation()
 
     return (
             <div className="border-t border-gray-500 mt-2 pt-1 text-sm">
-                <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} />
+                <span dangerouslySetInnerHTML={{ __html: obj.descriptionKey ? t(obj.descriptionKey) : obj.displayName }} />
             </div>
     )
 }
@@ -289,7 +289,7 @@ const EntryList = () => {
     //     })}
     // </>)
 
-    const moves = useSelector(dance.selectFilteredEntries)
+    const moves = useSelector(avatar.selectFilteredEntries)
     return (
         <>
             {moves.map((move, index) =>
@@ -301,16 +301,16 @@ const EntryList = () => {
 
 const APISearchBar = () => {
     const dispatch = useDispatch()
-    const searchText = useSelector(dance.selectSearchText)
-    const dispatchSearch = (event: ChangeEvent<HTMLInputElement>) => dispatch(dance.setSearchText(event.target.value))
-    const dispatchReset = () => dispatch(dance.setSearchText(""))
+    const searchText = useSelector(avatar.selectSearchText)
+    const dispatchSearch = (event: ChangeEvent<HTMLInputElement>) => dispatch(avatar.setSearchText(event.target.value))
+    const dispatchReset = () => dispatch(avatar.setSearchText(""))
     const caiHighlight = useSelector(cai.selectHighlight)
     const props = { searchText, dispatchSearch, dispatchReset, id: "apiSearchBar", highlight: caiHighlight.zone === "apiSearchBar" }
 
     return <SearchBar {...props} />
 }
 
-export const DANCEBrowser = () => {
+export const AVATARBrowser = () => {
     return (
         <>
             <div className="grow-0 pb-3">
@@ -322,7 +322,7 @@ export const DANCEBrowser = () => {
             </div> */}
             <div className="flex-auto overflow-y-scroll overflow-x-none"
                  role="tabpanel"
-                 id={"panel-" + BrowserTabType.DANCE}>
+                 id={"panel-" + BrowserTabType.AVATAR}>
                 <EntryList />
             </div>
         </>

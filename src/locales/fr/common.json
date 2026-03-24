@@ -384,6 +384,7 @@
     "close": "Fermer",
     "types": {
       "soundConstant": "Constante du son",
+      "danceMoveConstant": "Mouvement de danse constant",
       "analysisConstant": "Constante d'analyse",
       "folderConstant": "Constante de dossier",
       "effectConstant": "Constante d'effet",

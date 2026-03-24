@@ -352,7 +352,6 @@ const HipHopFBXViewer: React.FC = () => {
 
     const categorizeBone = (boneName: string): BoneCategory => {
         const name = boneName.toLowerCase()
-        console.log(name)
 
         if (name.includes("head") || name.includes("neck")) return "head"
         if (name.includes("spine") || name.includes("chest")) return "spine"
@@ -677,8 +676,8 @@ const HipHopFBXViewer: React.FC = () => {
     const viewerStyle: React.CSSProperties = {
         width: 320,
         height: 420,
-        left: Math.max(16, width - 340),
-        bottom: "25%",
+        left: Math.max(16, width - 400),
+        bottom: "20%",
     }
 
     if (!shouldShow) {

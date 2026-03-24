@@ -372,6 +372,7 @@
     "close": "Cerrar",
     "types": {
       "soundConstant": "Constante sonora",
+      "danceMoveConstant": "Constante de movimiento de baile",
       "analysisConstant": "Constante de análisis",
       "folderConstant": "Constante de archivo",
       "effectConstant": "Constante de efecto",

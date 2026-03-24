@@ -393,6 +393,7 @@
     "close": "Gibisin",
     "types": {
       "soundConstant": "Apane gaa - inweg",
+      "danceMoveConstant": "Mouvement de danse constant",
       "analysisConstant": "Apane naanaagadawaabandaman",
       "folderConstant": "Apane Ezhi - ganawenjigaadegin",
       "effectConstant": "Apane ge - izhiseg",

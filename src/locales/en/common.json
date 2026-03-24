@@ -516,6 +516,7 @@
     "close": "Close",
     "types": {
       "soundConstant": "Sound Constant",
+      "danceMoveConstant": "Dance Move Constant",
       "analysisConstant": "Analysis Constant",
       "folderConstant": "Folder Constant",
       "effectConstant": "Effect Constant",

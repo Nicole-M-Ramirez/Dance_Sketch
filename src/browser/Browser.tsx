@@ -10,6 +10,7 @@ import { SoundBrowser } from "./Sounds"
 import { ScriptBrowser } from "./Scripts"
 import { APIBrowser } from "./API"
 import {DANCEBrowser} from "./DANCE"
+import {AVATARBrowser} from "./AVATAR"
 import type { RootState } from "../reducers"
 import { Collapsed } from "./Utils"
 import { BrowserTabType } from "./BrowserTab"
@@ -114,6 +115,10 @@ export const BrowserTabs = () => {
             <BrowserTab name="DANCE MOVES" type={BrowserTabType.DANCE}>
                 <i className="icon-music pr-2" />
             </BrowserTab>
+
+            <BrowserTab name="AVATARS" type={BrowserTabType.AVATAR}>
+                <i className="icon-music pr-2" />
+            </BrowserTab>
         </div>
     )
 }
@@ -128,6 +133,7 @@ const BrowserComponents: { [key in BrowserTabType]: React.FC } = {
     [BrowserTabType.Script]: ScriptBrowser,
     [BrowserTabType.API]: APIBrowser,
     [BrowserTabType.DANCE]: DANCEBrowser,
+    [BrowserTabType.AVATAR]: AVATARBrowser,
 }
 
 export const Browser = () => {

@@ -393,6 +393,7 @@
     "close": "ᒪᑐᓗᒍ",
     "types": {
       "soundConstant": "ᓂᐱᖓ ᑲᔪᓰᓐᓇᖅᑐᖅ ",
+      "danceMoveConstant": "Mouvement de danse constant",
       "analysisConstant": "ᖃᐅᔨᓴᕐᓂᖅ ᑲᔪᓰᓐᓇᖅᑐᖅ ",
       "folderConstant": "ᑕᖁᐃᕕᒃ ᑲᔪᓰᓐᓇᖅᑐᖅ ",
       "effectConstant": "ᐊᒃᑐᐃᓂᖓᓐᓄᑦ ᑲᔪᓰᓐᓇᖅᑐᖅ",

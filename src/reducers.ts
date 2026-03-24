@@ -19,6 +19,7 @@ import curriculum from "./browser/curriculumState"
 import recommender from "./browser/recommenderState"
 import cai from "./cai/caiState"
 import dance from "./browser/danceState"
+import avatar from "./browser/avatarState"
 
 const rootReducer = combineReducers({
     app,
@@ -36,6 +37,7 @@ const rootReducer = combineReducers({
     recommender,
     cai,
     dance,
+    avatar,
 })
 
 const persistConfig = {

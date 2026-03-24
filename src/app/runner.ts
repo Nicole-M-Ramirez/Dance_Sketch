@@ -12,6 +12,8 @@ import * as pythonAPI from "../api/earsketch.py"
 import esconsole from "../esconsole"
 import { postRun } from "./postRun"
 import { Language } from "common"
+import { DANCE_MOVE_CONSTANTS } from "../dance/danceConstants"
+import {AVATAR_CONSTANTS} from "../dance/avatarConstanst"
 
 // For interrupting the currently-executing script.
 let pendingCancel = false
@@ -71,6 +73,18 @@ async function handleSoundConstantsPY(code: string) {
     }
 }
 
+function handleDanceMoveConstantsPY() {
+    for (const [constantName, moveName] of Object.entries(DANCE_MOVE_CONSTANTS)) {
+        Sk.builtins[constantName] = Sk.ffi.remapToPy(moveName)
+    }
+}
+
+function handleAvatarConstantsPY() {
+    for (const [constantName, moveName] of Object.entries(AVATAR_CONSTANTS)) {
+        Sk.builtins[constantName] = Sk.ffi.remapToPy(moveName)
+    }
+}
+
 function _getLineNumber(): number {
     throw new Error("Called getLineNumber() outside of script execution")
 }
@@ -101,6 +115,8 @@ async function runPython(code: string) {
     })
 
     await handleSoundConstantsPY(code)
+    handleDanceMoveConstantsPY()
+    handleAvatarConstantsPY()
 
     const lines = code.match(/\n/g) ? code.match(/\n/g)!.length + 1 : 1
     esconsole("Running " + lines + " lines of Python", ["debug", "runner"])
@@ -176,6 +192,20 @@ async function handleSoundConstantsJS(code: string, interpreter: any) {
     }
 }
 
+function handleDanceMoveConstantsJS(interpreter: any) {
+    const scope = interpreter.getScope().object
+    for (const [constantName, moveName] of Object.entries(DANCE_MOVE_CONSTANTS)) {
+        interpreter.setProperty(scope, constantName, moveName)
+    }
+}
+
+function handleAvatarConstantsJS(interpreter: any) {
+    const scope = interpreter.getScope().object
+    for (const [constantName, moveName] of Object.entries(AVATAR_CONSTANTS)) {
+        interpreter.setProperty(scope, constantName, moveName)
+    }
+}
+
 function createJsInterpreter(code: string) {
     let interpreter
     try {
@@ -201,6 +231,8 @@ async function runJavaScript(code: string) {
     esconsole("Running script using JS-Interpreter.", ["debug", "runner"])
     const mainInterpreter = createJsInterpreter(code)
     await handleSoundConstantsJS(code, mainInterpreter)
+    handleDanceMoveConstantsJS(mainInterpreter)
+    handleAvatarConstantsJS(mainInterpreter)
     getLineNumber = () => {
         const stateStack = mainInterpreter.stateStack
         return stateStack[stateStack.length - 1].node.loc.start.line

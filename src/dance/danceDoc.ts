@@ -79,5 +79,5 @@ export const DANCE_DOC: readonly DanceMove[] = [
         //     python: "dance:moves.waveLeftArm.example.python",
         //     javascript: "dance:moves.waveLeftArm.example.javascript",
         // },
-    }
+    },
 ]
