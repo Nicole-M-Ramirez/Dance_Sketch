@@ -928,6 +928,9 @@ export function fitDance(result: DAWData, upperMove: string, lowerMove: string, 
     checkType("lowerMove", "string", lowerMove)
 	checkType("start", "number", start as any)
 	checkType("end", "number", end as any)
+
+    checkOverlap("start", "end", start, end)
+    
 	if (typeof start !== "number" || !Number.isInteger(start) || start < 1) {
 		throw new TypeError("start must be an integer measure >= 1")
 	}

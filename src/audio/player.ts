@@ -62,7 +62,7 @@ export function play(startMes: number, delay = 0) {
     const waStartTime = context.currentTime + delay
 
     // Start beat printing when playback starts
-    startBeatPrinting(dawData!)
+    //startBeatPrinting(dawData!)
 
     // construct webaudio graph
     if (upcomingProjectGraph) clearAudioGraph(upcomingProjectGraph)

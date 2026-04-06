@@ -28,8 +28,9 @@ export const selectFilteredEntries = createSelector(
     (searchText, language, _) => {
         const term = searchText.toLowerCase()
         return DANCE_DOC.filter(move => {
-            const description = i18n.t(move.descriptionKey).toLowerCase()
-            const field = `${move.name.toLowerCase()}${move.displayName.toLowerCase()}${description}`
+            //const description = i18n.t(move.descriptionKey).toLowerCase()
+            //const field = `${move.name.toLowerCase()}${move.displayName.toLowerCase()}${description}`
+            const field = `${move.name.toLowerCase()}${move.displayName.toLowerCase()}`
             return field.includes(term)
         })
     }

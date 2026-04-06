@@ -18,8 +18,6 @@ import { Language } from "common"
 
 import * as THREE from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
-import * as daw from "../daw/dawState"
-
 interface AVATARParameter {
     typeKey: string
     descriptionKey: string
@@ -62,12 +60,10 @@ const paste = (name: string, obj: AVATARItem) => {
 
 const fixValue = (language: Language, value: string) => language !== "python" && ["True", "False"].includes(value) ? value.toLowerCase() : value
 
-const AnimationPreview = ({ name }: { name: string }) => {
+const AnimationPreview = ({ fbxFileName }: { fbxFileName: string }) => {
     const FBX_BASE = "/MixamoAnimations"
-    const AVATAR_FBX_NAME = "Avatar.fbx"
-    const base = name.endsWith(".fbx") ? name : `${name}.fbx`
-    function fbxUrl(name: string): string {
-        const base = name.endsWith(".fbx") ? name : `${name}.fbx`
+    function fbxUrl(fileName: string): string {
+        const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
         return `${FBX_BASE}/${base}`
     }
 
@@ -76,8 +72,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const clockRef = useRef(new THREE.Clock())
-    const avatar = useSelector(daw.selectAvatar)
-    const avatarFbxName = avatar?.fbxName || AVATAR_FBX_NAME
+    const resolvedFbx = fbxFileName.trim() || "Avatar.fbx"
     const avatarRef = useRef<THREE.Object3D | null>(null)
     const [avatarReady, setAvatarReady] = useState(false)
     const animFrameRef = useRef<number>(0)
@@ -116,7 +111,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
 
         const avatarLoader = new FBXLoader()
         avatarLoader.load(
-            fbxUrl(avatarFbxName),
+            fbxUrl(resolvedFbx),
             (fbx) => {
                 fbx.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
@@ -167,14 +162,14 @@ const AnimationPreview = ({ name }: { name: string }) => {
             avatarRef.current = null
             clipCacheRef.current = {}
         }
-    }, [avatarFbxName])
+    }, [resolvedFbx])
 
-    // Load and play the selected move's animation whenever the entry is opened
+    // Load and play clip from the same catalog FBX when the entry is opened
     useEffect(() => {
         if (!avatarReady || !mixerRef.current) return
 
         const mixer = mixerRef.current
-        const url = fbxUrl(name)
+        const url = fbxUrl(resolvedFbx)
 
         // Use cached clip if available
         if (clipCacheRef.current[url]) {
@@ -214,7 +209,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
                 clipCacheRef.current[url] = null
             }
         )
-    }, [name, avatarReady])
+    }, [resolvedFbx, avatarReady])
 
     return (
         <div
@@ -264,7 +259,7 @@ const Entry = ({ name, obj }: { name: string, obj: AVATARItem & { details?: bool
             {obj.details && (
                 <>
                     <Details obj={obj} />
-                    <AnimationPreview name={name} /> 
+                    <AnimationPreview fbxFileName={obj.name} />
                 </>)}
         </div>
     )

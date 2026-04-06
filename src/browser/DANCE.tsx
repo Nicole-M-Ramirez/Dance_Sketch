@@ -234,12 +234,13 @@ const Entry = ({ name, obj }: { name: string, obj: DANCEItem & { details?: boole
     const tabsOpen = !!useSelector(tabs.selectOpenTabs).length
     const language = useSelector(selectScriptLanguage)
 
-    const returnText = t(obj.descriptionKey)
+    //const returnText = t(obj.descriptionKey)
     return (
         <div className="p-3 border-b border-r border-black border-gray-500 dark:border-gray-700">
             <div className="flex justify-between mb-2">
                 <span
-                    className="font-bold cursor-pointer truncate" title={returnText}
+                    //className="font-bold cursor-pointer truncate" title={returnText}
+                    className="font-bold cursor-pointer truncate"
                     onClick={() => { obj.details = !obj.details; forceUpdate(); addUIClick("api read - " + name) }}
                 >
                     {name}
@@ -276,7 +277,7 @@ const Details = ({ obj}: { obj: DANCEItem}) => {
 
     return (
             <div className="border-t border-gray-500 mt-2 pt-1 text-sm">
-                <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} />
+               {/* <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} /> */}
             </div>
     )
 }
