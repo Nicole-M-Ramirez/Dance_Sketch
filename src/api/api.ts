@@ -16,16 +16,11 @@ export const API_FUNCTIONS = {
     setTempo: { async: false, mod: true, return: false },
     finish: { async: false, mod: true, return: false },
     fitMedia: { async: false, mod: true, return: false },
-    insertDanceMove: { async: false, mod: true, return: false }, // funtion to insert a dance move
+    fitDance: { async: false, mod: true, return: false }, // function to fit a dance move to the choreography
     insertMedia: { async: false, mod: true, return: false },
     makeBeat: { async: false, mod: true, return: false },
     rhythmEffects: { async: false, mod: true, return: false },
     setEffect: { async: false, mod: true, return: false },
-    One: { async: false, mod: true, return: false }, // Function to display triangle.png
-    //Setup_Dancer: { async: false, mod: true, return: false }, // Function to display triangle.png
-    fitDance: { async: false, mod: true, return: false },
-    //beat:{ async: false, mod: true, return: false}, //funcion que aga print 1 cada 3 beats
-    // Return value, don't modify DAW data.
     gauss: { async: false, mod: false, return: true },
     println: { async: false, mod: false, return: true },
     replaceListElement: { async: false, mod: false, return: true },
@@ -50,7 +45,7 @@ export const API_FUNCTIONS = {
     importImage: { async: true, mod: false, return: true },
     importFile: { async: true, mod: false, return: true },
     selectRandomFile: { async: true, mod: false, return: true },
-    setAvatar: { async: false, mod: false, return: true },
+    setAvatar: { async: false, mod: false, return: true }, // function to set the avatar for the choreography
 }
 
 export const EFFECT_NAMES_DISPLAY = [
@@ -174,25 +169,13 @@ const rawDoc: { [key: string]: Item[] } = {
             end: "float",
         },
     }],
-    // Setup_Dancer: [{
-    //     parameters: {
-    //         ani_1: "string",
-    //         ani_2: "string",
-    //         start:"integer",
-    //         end: "integer",
-    //     }
-    // }],
+    // function to fit a dance move to the choreography
     fitDance: [{
         parameters: {
             upperMove: "string",
             lowerMove: "string",
             start: "integer",
             end: "integer",
-        },
-    }],
-    setAvatar: [{
-        parameters: {
-            fbxName: "string",
         },
     }],
     insertDanceMove: [{
@@ -349,6 +332,12 @@ const rawDoc: { [key: string]: Item[] } = {
             },
         },
         returns: "soundConstant",
+    }],
+    // function to set the avatar for the choreography
+    setAvatar: [{
+        parameters: {
+            fbxName: "string",
+        },
     }],
     setEffect: [{
         parameters: {

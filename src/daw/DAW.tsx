@@ -2,7 +2,6 @@ import React, { useEffect, useState, useRef } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useTranslation } from "react-i18next"
 import { createPortal } from "react-dom"
-
 import * as appState from "../app/appState"
 import { EFFECT_MAP } from "../audio/effects"
 import { setReady } from "../bubble/bubbleState"
@@ -18,8 +17,7 @@ import { addUIClick } from "../cai/dialogue/student"
 import { clearDAWHoverLine, setDAWHoverLine, setDAWPlayingLines } from "../ide/Editor"
 import { selectPlayArrows, selectScriptMatchesDAW } from "../ide/ideState"
 import classNames from "classnames"
-import CatDanceAnimation from "../components/CatDanceAnimation"
-import HipHopFBXViewer from "../components/HipHopFBXViewer"
+import FBXViewer from "../components/FBXViewer"
 import { DotLottieReact } from "@lottiefiles/dotlottie-react"
 
 import { selectTempoMap } from './dawState'
@@ -973,53 +971,6 @@ const DancingStickFigure = () => {
     )
 }
 
-export const PlaybackIndicator = () => {
-    const playing = useSelector(daw.selectPlaying)
-
-    const tempoMap = useSelector(daw.selectTempoMap)
-    const playPosition = useSelector(daw.selectPlaying)
-    const currentTempo = tempoMap.getTempoAtMeasure(1)
-    //const playPosition = useSelector(daw.selectPlayPosition)
-    //const tempoAtCurrentPosition = tempoMap.getTempoAtMeasure(playPosition)
-    //console.log(playPosition)
-    //const baseTempo = 120
-    //const speedMultiplier = currentTempo / baseTempo
-
-    if(playing){
-
-    return (
-     <div style={{ zIndex:3 }} className={`fixed top-4 right-4 transition-opacity duration-300 `}>
-            {/* <img src={require('../../public/img/triangle.png')} alt="Playback indicator" className="w-16 h-16" /> 
-            <DotLottieReact
-                src="https://lottie.host/d695ad9f-bfc8-40e5-998f-e8294aaae860/zHaLvMjuSC.lottie"
-                loop
-                autoplay
-                speed={currentTempo*0.01 * 1}
-            /> */}
-        </div>
-    )
-         
-    }
-    else{
-        return(<div></div>)
-
-    }
-
-    
-    
-    // return (
-    //     <div style={{ zIndex:3 }} className={`fixed top-4 right-4 transition-opacity duration-300 ${playing ? 'opacity-100' : 'opacity-0'}`}>
-    //         {/* <img src={require('../../public/img/triangle.png')} alt="Playback indicator" className="w-16 h-16" /> */}
-    //         <DotLottieReact
-    //             src="https://lottie.host/732a8fc4-9814-4308-944d-97bf4800120c/RJj7mf6kK5.lottie"
-    //             loop
-    //             autoplay
-    //             speed={1}
-    //         />
-    //     </div>
-    // )
-}
-
 export const DAW = () => {
     const dispatch = useDispatch()
     const xScale = useSelector(daw.selectXScale)
@@ -1319,17 +1270,18 @@ export const DAW = () => {
         }
     }, [playing, xScale, autoScroll])
 
+    // Loops trougth the dance queue
     const fbxDanceTasks = useSelector(daw.selectFbxDanceTasks)
+
+    // check if fitDance has been called at least ones in the user's script
     const hasFitDance = fbxDanceTasks.length > 0
 
     return <div className={`flex flex-col w-full h-full relative overflow-hidden ${theme === "light" ? "theme-light" : "dark"}`}>
         {hideEditor &&
         <div style={{ display: "block" }} className="embedded-script-info"> Script {embeddedScriptName} by {embeddedScriptUsername}</div>}
         <Header playPosition={playPosition} setPlayPosition={setPlayPosition}></Header>
-        {/* <CatDanceAnimation />
-        <DancingStickFigure /> */}
-        <PlaybackIndicator />
-        {hasFitDance && <HipHopFBXViewer />}
+        {/* renders animation in UI */}
+        {hasFitDance && <FBXViewer />}
 
         {!hideDAW &&
         <div id="zoom-container" className="grow relative w-full h-full flex flex-col overflow-x-auto overflow-y-hidden z-0">

@@ -1,7 +1,6 @@
 import React from "react"
 import { useAppDispatch as useDispatch, useAppSelector as useSelector } from "../hooks"
 import { useTranslation } from "react-i18next"
-
 import * as appState from "../app/appState"
 import * as layout from "../ide/layoutState"
 import * as caiState from "../cai/caiState"
@@ -9,6 +8,7 @@ import * as caiThunks from "../cai/caiThunks"
 import { SoundBrowser } from "./Sounds"
 import { ScriptBrowser } from "./Scripts"
 import { APIBrowser } from "./API"
+//Dance and Avatar browser creation calls
 import {DANCEBrowser} from "./DANCE"
 import {AVATARBrowser} from "./AVATAR"
 import type { RootState } from "../reducers"
@@ -112,10 +112,12 @@ export const BrowserTabs = () => {
                 <i className="icon-book pr-2" />
             </BrowserTab>
 
+            {/* Browser tab creation for dance tab in content manager */}
             <BrowserTab name="DANCE MOVES" type={BrowserTabType.DANCE}>
                 <i className="icon-music pr-2" />
             </BrowserTab>
 
+            {/* Browser tab creation for avatar tab in content manager */}
             <BrowserTab name="AVATARS" type={BrowserTabType.AVATAR}>
                 <i className="icon-music pr-2" />
             </BrowserTab>
@@ -132,6 +134,8 @@ const BrowserComponents: { [key in BrowserTabType]: React.FC } = {
     [BrowserTabType.Sound]: SoundBrowser,
     [BrowserTabType.Script]: ScriptBrowser,
     [BrowserTabType.API]: APIBrowser,
+
+    // Browser component creation for dance and avatar tabs
     [BrowserTabType.DANCE]: DANCEBrowser,
     [BrowserTabType.AVATAR]: AVATARBrowser,
 }

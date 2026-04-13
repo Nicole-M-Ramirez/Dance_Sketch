@@ -1,11 +1,9 @@
-
-import React, { useEffect, useRef, useState, ChangeEvent  } from "react"
+import React, { useEffect, useRef, useState, ChangeEvent } from "react"
 import { useSelector, useDispatch } from "react-redux"
 import { useTranslation } from "react-i18next"
 
 import { BrowserTabType } from "./BrowserTab"
 import * as dance from "./danceState"
-//import type { APIItem, APIParameter } from "../api/api"
 import { selectScriptLanguage } from "../app/appState"
 
 import { SearchBar } from "./Utils"
@@ -13,61 +11,32 @@ import * as editor from "../ide/Editor"
 import * as tabs from "../ide/tabState"
 import * as cai from "../cai/caiState"
 import { addUIClick } from "../cai/dialogue/student"
-import { highlight } from "../ide/highlight"
 import { Language } from "common"
 
 import * as THREE from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
 import * as daw from "../daw/dawState"
 
-interface DANCEParameter {
-    typeKey: string
-    descriptionKey: string
-    default?: string
-}
-
 import type { DanceMove } from "../dance/danceDoc"
 import { getDanceMoveConstantNameForDisplayName } from "../dance/danceConstants"
 
 type DANCEItem = DanceMove
 
-const Code = ({ source, language }: { source: string, language: Language }) => {
-    const { light, dark } = highlight(source, language)
-    return <>
-        <code className={language + " whitespace-pre overflow-x-auto block dark:hidden"}>
-            {light}
-        </code>
-        <code className={language + " whitespace-pre overflow-x-auto hidden dark:block"}>
-            {dark}
-        </code>
-    </>
-}
-
-// Hack from https://stackoverflow.com/questions/46240647/react-how-to-force-a-function-component-to-render
-// TODO: Get rid of this by moving obj.details into Redux state.
-function useForceUpdate() {
-    const [_, setValue] = useState(0) // integer state
-    return () => setValue(value => ++value) // update the state to force render
-}
-
-const paste = (name: string, obj: DANCEItem) => {
-    // const args: string[] = []
-    // for (const param in obj.parameters) {
-    //     args.push(param)
-    // }
-
+// Inserts the dance move constant (or fallback string) into the code editor.
+const paste = (name: string) => {
     const constantName = getDanceMoveConstantNameForDisplayName(name)
     editor.pasteCode(constantName ?? `"${name}"`)
 }
 
-const fixValue = (language: Language, value: string) => language !== "python" && ["True", "False"].includes(value) ? value.toLowerCase() : value
+const fixValue = (language: Language, value: string) =>
+    language !== "python" && ["True", "False"].includes(value) ? value.toLowerCase() : value
 
 const AnimationPreview = ({ name }: { name: string }) => {
-    const FBX_BASE = "/MixamoAnimations"
+    const FBX_BASE = "/MixamoAnimations/Avatars/"
     const AVATAR_FBX_NAME = "Avatar.fbx"
-    const base = name.endsWith(".fbx") ? name : `${name}.fbx`
-    function fbxUrl(name: string): string {
-        const base = name.endsWith(".fbx") ? name : `${name}.fbx`
+
+    function fbxUrl(fileName: string): string {
+        const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
         return `${FBX_BASE}/${base}`
     }
 
@@ -76,22 +45,26 @@ const AnimationPreview = ({ name }: { name: string }) => {
     const cameraRef = useRef<THREE.PerspectiveCamera | null>(null)
     const rendererRef = useRef<THREE.WebGLRenderer | null>(null)
     const clockRef = useRef(new THREE.Clock())
+
     const avatar = useSelector(daw.selectAvatar)
     const avatarFbxName = avatar?.fbxName || AVATAR_FBX_NAME
+
     const avatarRef = useRef<THREE.Object3D | null>(null)
     const [avatarReady, setAvatarReady] = useState(false)
+
     const animFrameRef = useRef<number>(0)
     const currentActionRef = useRef<THREE.AnimationAction | null>(null)
     const clipCacheRef = useRef<Record<string, THREE.AnimationClip | null>>({})
-
     const mixerRef = useRef<THREE.AnimationMixer | null>(null)
 
     useEffect(() => {
         const container = containerRef.current
         if (!container) return
 
-        //setAvatarReady(false)
+        // Reset readiness when avatar changes.
+        setAvatarReady(false)
 
+        // Set up Three.js scene, camera, renderer, and lights.
         const scene = new THREE.Scene()
         scene.background = new THREE.Color(0xB8E8F5)
         sceneRef.current = scene
@@ -110,10 +83,12 @@ const AnimationPreview = ({ name }: { name: string }) => {
 
         const ambient = new THREE.AmbientLight(0xffffff, 4)
         scene.add(ambient)
+
         const dir = new THREE.DirectionalLight(0xffffff, 0.8)
         dir.position.set(2, 5, 3)
         scene.add(dir)
 
+        // Load the selected avatar model used to preview the dance move.
         const avatarLoader = new FBXLoader()
         avatarLoader.load(
             fbxUrl(avatarFbxName),
@@ -124,6 +99,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
                         child.receiveShadow = true
                     }
                 })
+
                 const scale = 0.01
                 fbx.scale.setScalar(scale)
                 fbx.position.set(0, 0, 0)
@@ -134,9 +110,6 @@ const AnimationPreview = ({ name }: { name: string }) => {
                 const mixer = new THREE.AnimationMixer(fbx)
                 mixerRef.current = mixer
                 setAvatarReady(true)
-
-                
-                // mixer.timeScale = speed
             },
             undefined,
             (err) => {
@@ -144,6 +117,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
             }
         )
 
+        // Main render loop.
         const animate = () => {
             animFrameRef.current = requestAnimationFrame(animate)
             const delta = clockRef.current.getDelta()
@@ -152,13 +126,16 @@ const AnimationPreview = ({ name }: { name: string }) => {
         }
         animate()
 
+        // Cleanup on unmount or avatar change.
         return () => {
             cancelAnimationFrame(animFrameRef.current)
+
             if (rendererRef.current) {
                 rendererRef.current.dispose()
                 const parent = rendererRef.current.domElement.parentNode
                 if (parent) parent.removeChild(rendererRef.current.domElement)
             }
+
             rendererRef.current = null
             sceneRef.current = null
             cameraRef.current = null
@@ -169,20 +146,18 @@ const AnimationPreview = ({ name }: { name: string }) => {
         }
     }, [avatarFbxName])
 
-    // Load and play the selected move's animation whenever the entry is opened
     useEffect(() => {
         if (!avatarReady || !mixerRef.current) return
 
         const mixer = mixerRef.current
         const url = fbxUrl(name)
 
-        // Use cached clip if available
+        // Reuse cached animation clip if already loaded.
         if (clipCacheRef.current[url]) {
             const cachedClip = clipCacheRef.current[url]
             if (cachedClip) {
-                if (currentActionRef.current) {
-                    currentActionRef.current.stop()
-                }
+                if (currentActionRef.current) currentActionRef.current.stop()
+
                 const action = mixer.clipAction(cachedClip)
                 action.reset()
                 action.play()
@@ -191,6 +166,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
             return
         }
 
+        // Load and play the selected dance move animation.
         const loader = new FBXLoader()
         loader.load(
             url,
@@ -199,9 +175,8 @@ const AnimationPreview = ({ name }: { name: string }) => {
                 clipCacheRef.current[url] = clip || null
 
                 if (clip && mixerRef.current) {
-                    if (currentActionRef.current) {
-                        currentActionRef.current.stop()
-                    }
+                    if (currentActionRef.current) currentActionRef.current.stop()
+
                     const action = mixerRef.current.clipAction(clip)
                     action.reset()
                     action.play()
@@ -218,99 +193,120 @@ const AnimationPreview = ({ name }: { name: string }) => {
 
     return (
         <div
-        ref={containerRef}
-        className="mt-3 rounded-lg overflow-hidden shadow-lg border border-gray-700"
-        style={{ width: 200, height: 300}}
-        aria-label="Dance animation (idle)"
-    />
+            ref={containerRef}
+            className="mt-3 rounded-lg overflow-hidden shadow-lg border border-gray-700"
+            style={{ width: 200, height: 300 }}
+            aria-label="Dance animation preview"
+        />
     )
 }
 
-// Main point of this module.
-const Entry = ({ name, obj }: { name: string, obj: DANCEItem & { details?: boolean } }) => {
-    // TODO don't mutate obj.details
+// Renders one dance move entry row in the browser list.
+const Entry = ({ name, obj }: { name: string, obj: DANCEItem }) => {
     const { t } = useTranslation()
-    const forceUpdate = useForceUpdate()
     const tabsOpen = !!useSelector(tabs.selectOpenTabs).length
-    const language = useSelector(selectScriptLanguage)
 
-    //const returnText = t(obj.descriptionKey)
+    // Local UI state instead of mutating obj.details.
+    const [detailsOpen, setDetailsOpen] = useState(false)
+
+    const toggleDetails = () => {
+        setDetailsOpen((prev) => !prev)
+        addUIClick("api read - " + name)
+    }
+
     return (
         <div className="p-3 border-b border-r border-black border-gray-500 dark:border-gray-700">
             <div className="flex justify-between mb-2">
                 <span
-                    //className="font-bold cursor-pointer truncate" title={returnText}
                     className="font-bold cursor-pointer truncate"
-                    onClick={() => { obj.details = !obj.details; forceUpdate(); addUIClick("api read - " + name) }}
+                    onClick={toggleDetails}
                 >
                     {name}
                 </span>
+
                 <div className="flex">
                     <button
                         className={`hover:bg-gray-200 active:bg-gray-300 h-full pt-1 mr-2 text-xs rounded-full px-2.5 border border-gray-600 ${tabsOpen ? "" : "hidden"}`}
-                        onClick={() => { paste(name, obj); addUIClick("api copy - " + name) }}
+                        onClick={() => {
+                            paste(name)
+                            addUIClick("api copy - " + name)
+                        }}
                         title={t("api:pasteToCodeEditor", { name })}
-                        aria-label={t("api:pasteToCodeEditor", { name })}>
+                        aria-label={t("api:pasteToCodeEditor", { name })}
+                    >
                         <i className="icon icon-paste2" />
                     </button>
-                    <button className="hover:bg-gray-200 active:bg-gray-300 h-full text-sm rounded-full pl-1.5 border border-gray-600 whitespace-nowrap"
-                        onClick={() => { obj.details = !obj.details; forceUpdate(); addUIClick("api read - " + name); }}
-                        title={obj.details ? t("ariaDescriptors:api.closeFunctionDetails", { functionName: name }) : t("ariaDescriptors:api.openFunctionDetails", { functionName: name })}
-                        aria-label={`${obj.details ? t("ariaDescriptors:api.closeFunctionDetails", { functionName: name }) : t("ariaDescriptors:api.openFunctionDetails", { functionName: name })}`}>
-                        <div className="inline-block w-10">{obj.details ? t("api:close") : t("api:open")}</div>
-                        <i className={`inline-block align-middle mb-px mx-1 icon icon-${obj.details ? "arrow-down" : "arrow-right"}`} />
+
+                    <button
+                        className="hover:bg-gray-200 active:bg-gray-300 h-full text-sm rounded-full pl-1.5 border border-gray-600 whitespace-nowrap"
+                        onClick={toggleDetails}
+                        title={
+                            detailsOpen
+                                ? t("ariaDescriptors:api.closeFunctionDetails", { functionName: name })
+                                : t("ariaDescriptors:api.openFunctionDetails", { functionName: name })
+                        }
+                        aria-label={
+                            detailsOpen
+                                ? t("ariaDescriptors:api.closeFunctionDetails", { functionName: name })
+                                : t("ariaDescriptors:api.openFunctionDetails", { functionName: name })
+                        }
+                    >
+                        <div className="inline-block w-10">
+                            {detailsOpen ? t("api:close") : t("api:open")}
+                        </div>
+                        <i
+                            className={`inline-block align-middle mb-px mx-1 icon icon-${
+                                detailsOpen ? "arrow-down" : "arrow-right"
+                            }`}
+                        />
                     </button>
                 </div>
             </div>
-            {obj.details && (
+
+            {detailsOpen && (
                 <>
-                    <Details obj={obj} />
-                    <AnimationPreview name={name} /> 
-                </>)}
+                    <AnimationPreview name={name} />
+                </>
+            )}
         </div>
     )
 }
 
-const Details = ({ obj}: { obj: DANCEItem}) => {
-    const language = useSelector(selectScriptLanguage)
-    const { t } = useTranslation()
-
-    return (
-            <div className="border-t border-gray-500 mt-2 pt-1 text-sm">
-               {/* <span dangerouslySetInnerHTML={{ __html: t(obj.descriptionKey) }} /> */}
-            </div>
-    )
-}
-
 const EntryList = () => {
-    // const entries = useSelector(dance.selectFilteredEntries)
-    // return (<>
-    //     {entries.map(([name, variants]) => {
-    //         return variants.map((o: DANCEItem, index: number) => <Entry key={name + index} name={name} obj={o} />)
-    //     })}
-    // </>)
-
     const moves = useSelector(dance.selectFilteredEntries)
+
     return (
         <>
-            {moves.map((move, index) =>
+            {moves.map((move, index) => (
                 <Entry key={move.name + index} name={move.displayName} obj={move} />
-            )}
+            ))}
         </>
     )
 }
 
+// Search bar for filtering dance moves.
 const APISearchBar = () => {
     const dispatch = useDispatch()
     const searchText = useSelector(dance.selectSearchText)
-    const dispatchSearch = (event: ChangeEvent<HTMLInputElement>) => dispatch(dance.setSearchText(event.target.value))
-    const dispatchReset = () => dispatch(dance.setSearchText(""))
     const caiHighlight = useSelector(cai.selectHighlight)
-    const props = { searchText, dispatchSearch, dispatchReset, id: "apiSearchBar", highlight: caiHighlight.zone === "apiSearchBar" }
+
+    const dispatchSearch = (event: ChangeEvent<HTMLInputElement>) =>
+        dispatch(dance.setSearchText(event.target.value))
+
+    const dispatchReset = () => dispatch(dance.setSearchText(""))
+
+    const props = {
+        searchText,
+        dispatchSearch,
+        dispatchReset,
+        id: "apiSearchBar",
+        highlight: caiHighlight.zone === "apiSearchBar",
+    }
 
     return <SearchBar {...props} />
 }
 
+// Main DANCE browser tab UI.
 export const DANCEBrowser = () => {
     return (
         <>
@@ -318,12 +314,11 @@ export const DANCEBrowser = () => {
                 <APISearchBar />
             </div>
 
-            {/* <div className="flex-auto overflow-y-scroll overflow-x-none" role="tabpanel" id={"panel-" + BrowserTabType.API}>
-                <EntryList />
-            </div> */}
-            <div className="flex-auto overflow-y-scroll overflow-x-none"
-                 role="tabpanel"
-                 id={"panel-" + BrowserTabType.DANCE}>
+            <div
+                className="flex-auto overflow-y-scroll overflow-x-none"
+                role="tabpanel"
+                id={"panel-" + BrowserTabType.DANCE}
+            >
                 <EntryList />
             </div>
         </>

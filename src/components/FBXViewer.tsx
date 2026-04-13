@@ -5,9 +5,9 @@ import * as THREE from "three"
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js"
 import * as daw from "../daw/dawState"
 import * as player from "../audio/player"
-import { useScreenSize } from "../components/useScreenSize"
+import { useScreenSize } from "./useScreenSize"
 
-//
+//construct path for nesesary animation and avatar
 const FBX_BASE = "/MixamoAnimations"
 const AVATAR_FBX_NAME = "Avatar.fbx"
 
@@ -16,9 +16,15 @@ function fbxUrl(name: string): string {
     return `${FBX_BASE}/${base}`
 }
 
+function avatarFbxUrl(name: string): string {
+    const base = name.endsWith(".fbx") ? name : `${name}.fbx`
+    return `${FBX_BASE}/Avatars/${base}`
+}
+
+// Bone cathegory to divide upper and lower body
 type BoneCategory = "head" | "spine" | "upper" | "lower" | "other"
 
-const HipHopFBXViewer: React.FC = () => {
+const FBXViewer: React.FC = () => {
     const dispatch = useDispatch()
     const tasks = useSelector(daw.selectFbxDanceTasks)
     const playing = useSelector(daw.selectPlaying)
@@ -49,6 +55,7 @@ const HipHopFBXViewer: React.FC = () => {
         return tempoMap.getTempoAtTime(position)
     }, [tempoMap, position])
 
+    // categorize bone on avatar squeleton
     const categorizeBone = (boneName: string): BoneCategory => {
         const name = boneName.toLowerCase()
 
@@ -81,6 +88,7 @@ const HipHopFBXViewer: React.FC = () => {
         return "other"
     }
 
+    // Separate upper body and lower body
     const isUpperBodyBone = (boneName: string): boolean => {
         const category = categorizeBone(boneName)
         return category === "head" || category === "spine" || category === "upper"
@@ -117,6 +125,7 @@ const HipHopFBXViewer: React.FC = () => {
         return isLowerBodyBone(boneName)
     }
 
+    // Build animation clip
     const buildHybridClip = (
         upperClip: THREE.AnimationClip | null,
         lowerClip: THREE.AnimationClip | null,
@@ -244,7 +253,7 @@ const HipHopFBXViewer: React.FC = () => {
 
         const avatarLoader = new FBXLoader()
         avatarLoader.load(
-            fbxUrl(avatarFbxName),
+            avatarFbxUrl(avatarFbxName),
             (fbx) => {
                 fbx.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
@@ -400,4 +409,4 @@ const HipHopFBXViewer: React.FC = () => {
     )
 }
 
-export default HipHopFBXViewer
+export default FBXViewer

@@ -1,8 +1,8 @@
 import { DANCE_DOC } from "./danceDoc"
 
+// Converts a display name into a constant-safe key.
+// Example: "HipHop1" -> "HIPHOP1"
 function toDanceMoveConstantKey(displayName: string): string {
-    // Keep it predictable and JS/Python-identifier-safe.
-    // Example: "HipHop1" -> "HIPHOP1"
     return displayName.replace(/[^A-Za-z0-9_]/g, "_").toUpperCase()
 }
 
@@ -16,6 +16,7 @@ export const DANCE_MOVE_CONSTANTS = Object.freeze(
 export type DanceMoveConstantName = keyof typeof DANCE_MOVE_CONSTANTS
 export type DanceMoveConstantValue = (typeof DANCE_MOVE_CONSTANTS)[DanceMoveConstantName]
 
+// Returns the constant name for a given display name, if it exists.
 export function getDanceMoveConstantNameForDisplayName(displayName: string): string | undefined {
     const key = toDanceMoveConstantKey(displayName)
     return Object.prototype.hasOwnProperty.call(DANCE_MOVE_CONSTANTS, key) ? key : undefined

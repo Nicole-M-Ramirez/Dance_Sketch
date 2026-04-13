@@ -24,6 +24,9 @@ import store from "../reducers"
 import * as request from "../request"
 import * as player from "../audio/player"
 import { animations } from "../data/Animations"
+//addFBXDanceTask: Adds  a dance task to the choreography queue to be executed after the script is finished
+//clearFBXDanceTasks: Clears the dance task queue
+//SetAvatar: Sets the avatar for the choreography
 import { setPlaying, addFbxDanceTask, clearFbxDanceTasks, SetAvatar} from "../daw/dawState"
 import { start } from "@popperjs/core"
 
@@ -905,49 +908,43 @@ export function shuffleString(result: DAWData, string: string) {
     return a.join("")
 }
 
-// export function beat(result: DAWData, number: number) {
-//     println(result, number)
-//     return 0
-// }
-
-// export function beat(result: DAWData, number: number) {
-//     const args = [...arguments].slice(1)
-//     esconsole("Calling beat with parameters" + args.join(", "), ["debug", "PT"])
-
-//     checkArgCount("beat", args, 1, 1)
-//     checkType("number", "number", number)
-//     checkRange("number", number, { min: 1 })
-
-//     return result
-// }
-
-
-//export function fitDance(result: DAWData, fbxName: string, start: number, end: number) {
+// Creates a choreography by fitting dance moves onto a virtual avatar for it to follow and dance alongside 
+// the music the user programmed using EarSketch’s provided tools
 export function fitDance(result: DAWData, upperMove: string, lowerMove: string, start: number, end: number) {
+
+    // check arguments
 	checkType("upperMove", "string", upperMove)
     checkType("lowerMove", "string", lowerMove)
 	checkType("start", "number", start as any)
 	checkType("end", "number", end as any)
 
+    // check if start and end are valid
     checkOverlap("start", "end", start, end)
     
+    // Chrck if start and end are integer numbers
 	if (typeof start !== "number" || !Number.isInteger(start) || start < 1) {
 		throw new TypeError("start must be an integer measure >= 1")
 	}
 	if (typeof end !== "number" || !Number.isInteger(end) || end < start) {
 		throw new TypeError("end must be an integer measure >= start")
 	}
+
+    // Adds dance move to queue
 	store.dispatch(addFbxDanceTask({upperMove, lowerMove, start, end }))
 	return result
 }
 
+// Sets avatar for the chotograohy
 export function setAvatar(result: DAWData, fbxName: string) {
+    // check argument
     checkType("fbxName", "string", fbxName)
+
+    // sets avatar for the chotograohy
     store.dispatch(SetAvatar(fbxName))
     return result
 }
 
-
+// Cleans dance queue
 export function cleanupAllDancers() {
 	store.dispatch(clearFbxDanceTasks())
 }

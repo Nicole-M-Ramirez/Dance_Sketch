@@ -1,18 +1,13 @@
 export interface Avatars {
-    name: string          // e.g. "WAVE_LEFT_ARM"
-    displayName: string   // what you show in the UI
-    descriptionKey?: string
-    // exampleKey: {
-    //     python: string
-    //     javascript: string
-    // }
+    name: string          // e.g. "Avatar.fbx"
+    displayName: string   // what you show in the UI, e.g. "AVATAR"
+    
 }
 
 export const AVATAR_DOC: readonly Avatars[] = [
     {
         name: "Michell.fbx",
         displayName: "Michell",
-       
     },
     {
         name: "Ninja.fbx",

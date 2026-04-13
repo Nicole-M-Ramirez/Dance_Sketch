@@ -13,7 +13,7 @@ import esconsole from "../esconsole"
 import { postRun } from "./postRun"
 import { Language } from "common"
 import { DANCE_MOVE_CONSTANTS } from "../dance/danceConstants"
-import {AVATAR_CONSTANTS} from "../dance/avatarConstanst"
+import {AVATAR_CONSTANTS} from "../dance/avatarConstants"
 
 // For interrupting the currently-executing script.
 let pendingCancel = false

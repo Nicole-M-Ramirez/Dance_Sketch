@@ -74,10 +74,9 @@ interface DAWState {
         reset: boolean,
     }
     autoScroll: boolean
-    fbxDanceTasks: { id: number; upperMove: string; lowerMove: string; start: number; end: number }[]
-    nextFbxDanceId: number
-
-    avatar: { fbxName: string }
+    fbxDanceTasks: { id: number; upperMove: string; lowerMove: string; start: number; end: number }[] // Dance queue
+    nextFbxDanceId: number // ID of dance move inside queue
+    avatar: { fbxName: string }// Selected avatar
 }
 
 const dawSlice = createSlice({
@@ -103,10 +102,10 @@ const dawSlice = createSlice({
             reset: false,
         },
         autoScroll: true,
-        fbxDanceTasks: [],
-        nextFbxDanceId: 1,
+        fbxDanceTasks: [], // tracks all the fitDance calls and its parameters
+        nextFbxDanceId: 1, // tracks ID of fitDance calls
 
-        avatar: { fbxName: "" },
+        avatar: { fbxName: "" }, // tracks current avatar the user wants to use
     } as DAWState,
     reducers: {
         setTracks(state, { payload }) {
@@ -154,16 +153,23 @@ const dawSlice = createSlice({
         setAutoScroll(state, { payload }) {
             state.autoScroll = payload
         },
+        // adds task to dance queue
         addFbxDanceTask(state, { payload }: { payload: { upperMove: string; lowerMove: string; start: number; end: number } }) {
             const id = state.nextFbxDanceId++
             state.fbxDanceTasks.push({ id, ...payload })
         },
+
+        // removes task form dance queue
         removeFbxDanceTask(state, { payload }: { payload: number }) {
             state.fbxDanceTasks = state.fbxDanceTasks.filter((t) => t.id !== payload)
         },
+
+        // clears dance queue
         clearFbxDanceTasks(state) {
             state.fbxDanceTasks = []
         },
+
+        // sets avatar for animation presentation
         SetAvatar(state, { payload }: { payload: string }) {
             state.avatar = { fbxName: payload }
         },
