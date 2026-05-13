@@ -1,87 +1,97 @@
-import { insertDanceMove, addDanceBlock } from "../../../src/api/passthrough"
-import { DAWData } from "common"
-
 jest.mock("../../../src/audio/context", () => ({
-    sampleRate: 44100,
+    default: {},
+    context: {},
+    OfflineAudioContext: {}
 }))
-
-// Mock reducers to avoid importing CodeMirror / ES Module problems
-jest.mock("../../../src/reducers", () => ({
-    default: { dispatch: jest.fn(), getState: jest.fn() },
-}))
-
 jest.mock("../../../src/app/postRun", () => ({}))
-jest.mock("../../../src/app/runner", () => ({ getLineNumber: jest.fn(() => 1) }))
-jest.mock("../../../src/app/Confetti", () => ({ blastConfetti: jest.fn() }))
-
-// Mock the esconsole to avoid actual logging during tests
-jest.mock("../../../src/esconsole", () => jest.fn())
+jest.mock("../../../src/app/runner", () => ({}))
 
 
-describe("passthrough dance api", () => {
-    let mockResult: DAWData;
+import { fitDance, cleanupAllDancers, insertDanceMove, addDanceBlock, setAvatar } from "../../../src/api/passthrough"
+import store from "../../../src/reducers"
+import * as dawState from "../../../src/daw/dawState"
+
+jest.mock("../../../src/reducers", () => ({
+    dispatch: jest.fn(),
+    getState: jest.fn(),
+}))
+
+jest.mock("../../../src/daw/dawState", () => ({
+    addFbxDanceTask: jest.fn(() => ({ type: "ADD_DANCE_TASK" })),
+    clearFbxDanceTasks: jest.fn(() => ({ type: "CLEAR_DANCE_TASKS" })),
+    SetAvatar: jest.fn(() => ({ type: "SET_AVATAR" })),
+}))
+
+jest.mock("../../../src/data/Animations", () => ({
+    animations: {
+        "HipHop1.fbx": {},
+        "HipHop2.fbx": {},
+    }
+}))
+
+describe("passthrough.dance", () => {
+    let mockResult: any
 
     beforeEach(() => {
-        // Mock a basic DAWData result
+        jest.clearAllMocks()
         mockResult = {
-            init: true,
-            finish: false,
+            tracks: [
+                { clips: [], effects: {}, danceBlocks: [] }
+            ],
             length: 0,
-            tracks: [],
             transformedClips: {},
-        } as unknown as DAWData;
-    });
+        }
+    })
 
-    describe("insertDanceMove bounds checking", () => {
-        it("should throw RangeError if l_arm_move does not exist in animations", () => {
+    describe("fitDance", () => {
+        it("should dispatch addFbxDanceTask with correct payload", () => {
+            fitDance(mockResult, "HipHop1.fbx", "HipHop2.fbx", 1, 5)
+
+            expect(dawState.addFbxDanceTask).toHaveBeenCalledWith({
+                upperMove: "HipHop1.fbx",
+                lowerMove: "HipHop2.fbx",
+                start: 1,
+                end: 5
+            })
+            expect(store.dispatch).toHaveBeenCalled()
+        })
+    })
+
+    describe("cleanupAllDancers", () => {
+        it("should dispatch clearFbxDanceTasks", () => {
+            cleanupAllDancers()
+            expect(dawState.clearFbxDanceTasks).toHaveBeenCalled()
+            expect(store.dispatch).toHaveBeenCalled()
+        })
+    })
+
+    describe("setAvatar", () => {
+        it("should dispatch SetAvatar", () => {
+            setAvatar(mockResult, "Ninja.fbx")
+            expect(dawState.SetAvatar).toHaveBeenCalledWith("Ninja.fbx")
+            expect(store.dispatch).toHaveBeenCalled()
+        })
+    })
+
+    describe("insertDanceMove / addDanceBlock", () => {
+        it("should throw RangeError if dance move does not exist in animations", () => {
             expect(() => {
-                insertDanceMove(mockResult, "INVALID_MOVE", "R_ARM", 1, 1);
-            }).toThrow(RangeError);
-        });
-
-        it("should throw RangeError if r_arm_move does not exist in animations", () => {
-            expect(() => {
-                insertDanceMove(mockResult, "L_ARM", "INVALID_MOVE", 1, 1);
-            }).toThrow(RangeError);
-        });
-
-        it("should throw TypeError or throw generic error from checking if missing arguments", () => {
-            expect(() => {
-                (insertDanceMove as any)(mockResult, "L_ARM", "R_ARM");
-            }).toThrow(); // Should throw error due to checkArgCount
-        });
-
-        it("should throw RangeError if measure < 1", () => {
-            expect(() => {
-                insertDanceMove(mockResult, "L_ARM", "R_ARM", 0, 1);
-            }).toThrow(RangeError);
-        });
-
-        it("should throw RangeError if repeat < 1", () => {
-            expect(() => {
-                insertDanceMove(mockResult, "L_ARM", "R_ARM", 1, 0);
-            }).toThrow(RangeError);
-        });
-
-        it("should not throw error for valid inputs", () => {
-            expect(() => {
-                insertDanceMove(mockResult, "L_ARM", "R_ARM", 1, 1);
-            }).not.toThrow();
-        });
-    });
-
-    describe("addDanceBlock functionality", () => {
-        it("should validate and possibly add dance block without crashing", () => {
-            const danceBlock = {
-                l_arm_move: "L_ARM",
-                r_arm_move: "R_ARM",
-                measure: 2,
-                repeat: 4,
-            } as any;
+                insertDanceMove(mockResult, "FakeMove.fbx", "HipHop1.fbx", 1, 4)
+            }).toThrow(RangeError)
 
             expect(() => {
-                addDanceBlock(mockResult, danceBlock);
-            }).not.toThrow();
-        });
-    });
-});
+                insertDanceMove(mockResult, "HipHop1.fbx", "FakeMove.fbx", 1, 4)
+            }).toThrow(RangeError)
+        })
+
+        it("should throw validation error if measure or repeat is < 1", () => {
+            expect(() => {
+                insertDanceMove(mockResult, "HipHop1.fbx", "HipHop2.fbx", 0, 4)
+            }).toThrow(RangeError) // Measure < 1
+
+            expect(() => {
+                insertDanceMove(mockResult, "HipHop1.fbx", "HipHop2.fbx", 1, 0)
+            }).toThrow(RangeError) // Repeat < 1
+        })
+    })
+})

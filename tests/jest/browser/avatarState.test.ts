@@ -1,55 +1,56 @@
-import avatarReducer, { setSearchText, selectSearchText, selectFilteredEntries } from "../../../src/browser/avatarState"
-import { RootState } from "../../../src/reducers"
+import reducer, { setSearchText, selectSearchText, selectFilteredEntries } from "../../../src/browser/avatarState"
 
-jest.mock("../../../src/app/appState", () => ({
-    selectScriptLanguage: jest.fn(() => "javascript"),
-    selectLocaleCode: jest.fn(() => "en"),
+// Mock AVATAR_DOC which selectFilteredEntries uses
+jest.mock("../../../src/dance/avatarDoc", () => ({
+    AVATAR_DOC: [
+        { name: "Michell.fbx", displayName: "Michell" },
+        { name: "Ninja.fbx", displayName: "Ninja" },
+    ]
 }))
 
-jest.mock("i18next", () => ({
-    t: (key: string) => key,
-}))
+describe("avatarState Redux Slice", () => {
+    describe("reducers", () => {
+        it("should return the initial state", () => {
+            expect(reducer(undefined, { type: "unknown" })).toEqual({
+                searchText: "",
+            })
+        })
 
-describe("avatarState", () => {
-    const initialState = {
-        searchText: "",
-    }
-
-    it("should return the initial state", () => {
-        expect(avatarReducer(undefined, { type: "unknown" })).toEqual(initialState)
-    })
-
-    it("should handle setSearchText", () => {
-        const actual = avatarReducer(initialState, setSearchText("ninja"))
-        expect(actual.searchText).toEqual("ninja")
-    })
-
-    it("should select the search text", () => {
-        const state = { avatar: { searchText: "ninja" } } as RootState
-        expect(selectSearchText(state)).toEqual("ninja")
-    })
-
-    it("should filter entries based on search text", () => {
-        const state = {
-            avatar: { searchText: "mich" },
-        } as unknown as RootState
-
-        const filtered = selectFilteredEntries(state)
-        
-        expect(filtered.length).toBeGreaterThan(0)
-        filtered.forEach((entry) => {
-            const description = entry.descriptionKey || ""
-            const field = `${entry.name.toLowerCase()}${entry.displayName.toLowerCase()}${description.toLowerCase()}`
-            expect(field).toContain("mich")
+        it("should handle setSearchText", () => {
+            const actual = reducer({ searchText: "" }, setSearchText("michell"))
+            expect(actual.searchText).toEqual("michell")
         })
     })
 
-    it("should return no entries if search text matches nothing", () => {
-        const state = {
-            avatar: { searchText: "invalidrandomsearchterm" },
-        } as unknown as RootState
+    describe("selectors", () => {
+        let mockState: any
 
-        const filtered = selectFilteredEntries(state)
-        expect(filtered.length).toBe(0)
+        beforeEach(() => {
+            mockState = {
+                avatar: {
+                    searchText: "michell",
+                },
+                app: {
+                    scriptLanguage: "python",
+                    localeCode: "en"
+                }
+            }
+        })
+
+        it("selectSearchText should retrieve correct string", () => {
+            expect(selectSearchText(mockState)).toEqual("michell")
+        })
+
+        it("selectFilteredEntries should filter correctly based on name and displayName ignores casing", () => {
+            const entries = selectFilteredEntries(mockState)
+            expect(entries).toHaveLength(1)
+            expect(entries[0].displayName).toEqual("Michell")
+        })
+
+        it("selectFilteredEntries should handle empty search text returning all", () => {
+            mockState.avatar.searchText = ""
+            const entries = selectFilteredEntries(mockState)
+            expect(entries).toHaveLength(2) // all entries
+        })
     })
 })

@@ -220,6 +220,7 @@ const FBXViewer: React.FC = () => {
     const shouldShow = !!activeTask && playing
     const upperFbxName = activeTask?.upperMove
     const lowerFbxName = activeTask?.lowerMove
+    const activeTaskId = activeTask?.id
 
     // Three.js setup
     useEffect(() => {
@@ -336,15 +337,19 @@ const FBXViewer: React.FC = () => {
             const previousAction = currentActionRef.current
             const nextAction = mixer.clipAction(clip)
 
+            if (previousAction) {
+                previousAction.stop()
+            }
+
             nextAction.reset()
             nextAction.setLoop(THREE.LoopRepeat, Infinity)
             nextAction.clampWhenFinished = false
             nextAction.enabled = true
             nextAction.play()
 
-            if (previousAction && previousAction !== nextAction) {
-                previousAction.crossFadeTo(nextAction, 0.3, false)
-            }
+            // if (previousAction && previousAction !== nextAction) {
+            //     previousAction.crossFadeTo(nextAction, 0.3, false)
+            // }
 
             currentActionRef.current = nextAction
         }
@@ -379,7 +384,7 @@ const FBXViewer: React.FC = () => {
         return () => {
             cancelled = true
         }
-    }, [shouldShow, upperFbxName, lowerFbxName, avatarReady])
+    }, [shouldShow, upperFbxName, lowerFbxName, avatarReady,activeTask?.id])
 
     const viewerStyle: React.CSSProperties = {
         width: 320,

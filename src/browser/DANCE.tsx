@@ -32,12 +32,16 @@ const fixValue = (language: Language, value: string) =>
     language !== "python" && ["True", "False"].includes(value) ? value.toLowerCase() : value
 
 const AnimationPreview = ({ name }: { name: string }) => {
-    const FBX_BASE = "/MixamoAnimations/Avatars/"
-    const AVATAR_FBX_NAME = "Avatar.fbx"
+    const AVATAR_FBX_NAME = "Michell.fbx"
 
-    function fbxUrl(fileName: string): string {
+    function avatarFbxUrl(fileName: string): string {
         const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
-        return `${FBX_BASE}/${base}`
+        return `/MixamoAnimations/Avatars/${base}`
+    }
+
+    function danceFbxUrl(fileName: string): string {
+        const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
+        return `/MixamoAnimations/${base}`
     }
 
     const containerRef = useRef<HTMLDivElement>(null)
@@ -91,7 +95,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
         // Load the selected avatar model used to preview the dance move.
         const avatarLoader = new FBXLoader()
         avatarLoader.load(
-            fbxUrl(avatarFbxName),
+            avatarFbxUrl(avatarFbxName),
             (fbx) => {
                 fbx.traverse((child) => {
                     if (child instanceof THREE.Mesh) {
@@ -150,16 +154,17 @@ const AnimationPreview = ({ name }: { name: string }) => {
         if (!avatarReady || !mixerRef.current) return
 
         const mixer = mixerRef.current
-        const url = fbxUrl(name)
+        const url = danceFbxUrl(name)
 
         // Reuse cached animation clip if already loaded.
-        if (clipCacheRef.current[url]) {
+        if (Object.prototype.hasOwnProperty.call(clipCacheRef.current, url)) {
             const cachedClip = clipCacheRef.current[url]
             if (cachedClip) {
                 if (currentActionRef.current) currentActionRef.current.stop()
 
                 const action = mixer.clipAction(cachedClip)
                 action.reset()
+                action.setLoop(THREE.LoopRepeat, Infinity)
                 action.play()
                 currentActionRef.current = action
             }
@@ -179,6 +184,7 @@ const AnimationPreview = ({ name }: { name: string }) => {
 
                     const action = mixerRef.current.clipAction(clip)
                     action.reset()
+                    action.setLoop(THREE.LoopRepeat, Infinity)
                     action.play()
                     currentActionRef.current = action
                 }
