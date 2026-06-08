@@ -36,12 +36,12 @@ const AnimationPreview = ({ name }: { name: string }) => {
 
     function avatarFbxUrl(fileName: string): string {
         const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
-        return `/MixamoAnimations/Avatars/${base}`
+        return `${BASE_URL}MixamoAnimations/Avatars/${base}`
     }
 
     function danceFbxUrl(fileName: string): string {
         const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
-        return `/MixamoAnimations/${base}`
+        return `${BASE_URL}MixamoAnimations/${base}`
     }
 
     const containerRef = useRef<HTMLDivElement>(null)

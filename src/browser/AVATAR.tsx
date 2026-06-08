@@ -23,13 +23,13 @@ const paste = (name: string) => {
 // Builds the file path for avatar rig models.
 function avatarFbxUrl(fileName: string): string {
     const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
-    return `/MixamoAnimations/Avatars/${base}`
+    return `${BASE_URL}MixamoAnimations/Avatars/${base}`
 }
 
 // Builds the file path for motion/animation clips.
 function danceFbxUrl(fileName: string): string {
     const base = fileName.endsWith(".fbx") ? fileName : `${fileName}.fbx`
-    return `/MixamoAnimations/${base}`
+    return `${BASE_URL}MixamoAnimations/${base}`
 }
 
 // Default animation used to preview avatars in the browser.

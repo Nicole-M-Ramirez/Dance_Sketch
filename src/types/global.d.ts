@@ -6,6 +6,7 @@ declare const URL_DOMAIN: string
 declare const URL_WEBSOCKET: string
 declare const SITE_BASE_URI: string
 declare const BUILD_NUM: string
+declare const BASE_URL: string
 declare const FLAGS: any
 
 declare const difflib: any

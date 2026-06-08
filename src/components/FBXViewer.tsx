@@ -8,7 +8,7 @@ import * as player from "../audio/player"
 import { useScreenSize } from "./useScreenSize"
 
 //construct path for nesesary animation and avatar
-const FBX_BASE = "/MixamoAnimations"
+const FBX_BASE = `${BASE_URL}MixamoAnimations`
 const AVATAR_FBX_NAME = "Avatar.fbx"
 
 function fbxUrl(name: string): string {
